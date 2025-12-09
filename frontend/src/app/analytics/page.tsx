@@ -292,7 +292,7 @@ export default function AnalyticsPage() {
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(0)}%`
+                      `${name}: ${((percent || 0) * 100).toFixed(0)}%`
                     }
                     outerRadius={100}
                     dataKey="value"
