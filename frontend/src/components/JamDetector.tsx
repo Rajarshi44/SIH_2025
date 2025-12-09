@@ -13,12 +13,18 @@ export const JamAlert = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [jamDurations, setJamDurations] = useState<Record<string, number>>({});
   const shownAlerts = useRef<Set<number>>(new Set());
+  const lastAlertCount = useRef(0);
 
   useEffect(() => {
-    jamAlerts.forEach((alert) => {
-      if (!shownAlerts.current.has(alert.id)) {
+    // Only show notification if new alerts were added
+    if (jamAlerts.length > lastAlertCount.current) {
+      const newAlerts = jamAlerts.filter(
+        (alert) => !shownAlerts.current.has(alert.id)
+      );
+
+      newAlerts.forEach((alert) => {
         shownAlerts.current.add(alert.id);
-        
+
         // Play audio
         if (audioRef.current) {
           audioRef.current
@@ -31,6 +37,16 @@ export const JamAlert = () => {
           description: `${alert.motor} has jammed`,
           duration: 2000,
         });
+      });
+    }
+
+    lastAlertCount.current = jamAlerts.length;
+
+    // Clean up shown alerts that are no longer in jamAlerts
+    const currentIds = new Set(jamAlerts.map((a) => a.id));
+    shownAlerts.current.forEach((id) => {
+      if (!currentIds.has(id)) {
+        shownAlerts.current.delete(id);
       }
     });
   }, [jamAlerts]);

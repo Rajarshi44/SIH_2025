@@ -26,7 +26,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
   const handleToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     const timestamp = new Date().toLocaleTimeString();
-    
+
     // Update UI immediately
     updateMotor({ isOn: checked, status: checked ? "running" : "stopped" });
     setLastCommand(`${checked ? "Started" : "Stopped"} at ${timestamp}`);
@@ -36,7 +36,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       voltage: motor.voltage,
       current: motor.current,
     });
-    
+
     // Try API call in background
     try {
       if (checked) {
@@ -61,7 +61,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       voltage: motor.voltage,
       current: motor.current,
     });
-    
+
     // Try API call in background
     try {
       await motorService.setSpeed(motorLetter, value);

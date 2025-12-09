@@ -41,10 +41,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="p-6">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 relative bg-white rounded-lg p-1">
-              <Image 
-                src="/icon.jpg" 
-                alt="Sohojpaat Logo" 
-                width={48} 
+              <Image
+                src="/icon.jpg"
+                alt="Sohojpaat Logo"
+                width={48}
                 height={48}
                 className="object-contain"
               />
