@@ -35,12 +35,10 @@ export const authService = {
 
 export const motorService = {
   async start(motor: string) {
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE}/command/start`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ motor }),
     });
@@ -49,12 +47,10 @@ export const motorService = {
   },
 
   async stop(motor: string) {
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE}/command/stop`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ motor }),
     });
@@ -63,12 +59,10 @@ export const motorService = {
   },
 
   async setSpeed(motor: string, speed: number) {
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE}/command/set-speed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ motor, speed }),
     });
@@ -77,12 +71,10 @@ export const motorService = {
   },
 
   async sendCommand(command: string, motor: string) {
-    const token = getAuthToken();
     const response = await fetch(`${API_BASE}/command/start`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ command, motor }),
     });
@@ -164,7 +156,7 @@ export class WebSocketService {
     if (data.type === "telemetry") {
       // Store complete telemetry data
       store.setTelemetry(data);
-      
+
       if (data.motorA) {
         store.updateMotorA(data.motorA);
         store.addHistoryPoint("motorA", data.motorA);
@@ -180,7 +172,10 @@ export class WebSocketService {
         const motor = data.motorA.current > 2 ? "Motor A" : "Motor B";
         store.addJamAlert({
           motor,
-          severity: data.motorA.current > 3 || data.motorB.current > 3 ? "severe" : "warning",
+          severity:
+            data.motorA.current > 3 || data.motorB.current > 3
+              ? "severe"
+              : "warning",
           reason: "High current detected",
         });
       }
@@ -245,4 +240,3 @@ export class WebSocketService {
 }
 
 export const wsService = new WebSocketService();
-

@@ -54,7 +54,10 @@ export function handleDeviceConnection(ws: ExtendedWebSocket, req: any) {
           console.log(`[Device] Telemetry from ${deviceId}`);
           connectionManager.broadcastTelemetry(message);
         } else {
-          console.warn("[Device] Invalid telemetry format");
+          console.warn(
+            "[Device] Invalid telemetry format:",
+            JSON.stringify(message)
+          );
         }
       }
 

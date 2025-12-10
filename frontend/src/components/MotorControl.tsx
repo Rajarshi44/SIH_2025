@@ -71,7 +71,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
     }
   };
 
-  const handleDirectionToggle = () => {
+  const handleDirectionToggle = async () => {
     const newDirection = direction === "forward" ? "reverse" : "forward";
     setDirection(newDirection);
     const timestamp = new Date().toLocaleTimeString();
@@ -82,6 +82,21 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       voltage: motor.voltage,
       current: motor.current,
     });
+
+    // Send direction command to ESP32
+    try {
+      await fetch("/api/command/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          command: "SET_DIRECTION",
+          motor: motorName,
+          direction: newDirection,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to set direction:", error);
+    }
   };
 
   const getStatusBadge = () => {

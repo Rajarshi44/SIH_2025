@@ -1,13 +1,13 @@
-import {
-  CommandMessage,
-  TelemetryMessage,
-  StatusMessage,
-} from "./types";
+import { CommandMessage, TelemetryMessage, StatusMessage } from "./types";
 
 export function validateCommand(data: any): data is CommandMessage {
   if (!data || typeof data !== "object") return false;
   if (data.type !== "command") return false;
-  if (!["START", "STOP", "SET_SPEED", "RESET", "LED_ON", "LED_OFF"].includes(data.command))
+  if (
+    !["START", "STOP", "SET_SPEED", "RESET", "LED_ON", "LED_OFF"].includes(
+      data.command
+    )
+  )
     return false;
   if (data.motor && !["A", "B"].includes(data.motor)) return false;
   if (data.command === "SET_SPEED" && typeof data.value !== "number")

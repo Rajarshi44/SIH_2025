@@ -1,26 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "@/server/auth";
 import { sendToAllDevices } from "@/server/websocket";
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify JWT token
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.substring(7);
-    const user = verifyToken(token);
-
-    if (!user) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { motor } = body; // "A" or "B"
+    let { motor, command: customCommand } = body; // "A" or "B", and optional custom command
 
-    if (!motor || !["A", "B"].includes(motor)) {
+    // Normalize motor to uppercase
+    motor = motor?.toUpperCase();
+
+    // If custom command is provided, use it; otherwise default to START
+    const commandType = customCommand || "START";
+
+    // For LED commands, motor parameter is not required
+    if (!customCommand && (!motor || !["A", "B"].includes(motor))) {
       return NextResponse.json(
         { error: "Motor must be A or B" },
         { status: 400 }
@@ -29,8 +22,8 @@ export async function POST(request: NextRequest) {
 
     const command = {
       type: "command",
-      command: "START",
-      motor,
+      command: commandType,
+      motor: motor || "A",
       timestamp: new Date().toISOString(),
     };
 
@@ -42,7 +35,7 @@ export async function POST(request: NextRequest) {
       command,
     });
   } catch (error) {
-    console.error("[API] Start command error:", error);
+    console.error("[API] Command error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -70,7 +70,11 @@ class ConnectionManager {
   // Message routing
   forwardCommand(command: any) {
     let sent = 0;
+    console.log(`[Command] Total devices registered: ${this.devices.size}`);
     this.devices.forEach((device) => {
+      console.log(
+        `[Command] Device ${device.id} readyState: ${device.socket.readyState}`
+      );
       if (device.socket.readyState === 1) {
         // OPEN
         device.socket.send(JSON.stringify(command));
@@ -111,4 +115,14 @@ class ConnectionManager {
   }
 }
 
-export const connectionManager = new ConnectionManager();
+// Ensure singleton across Next.js hot reloads and different contexts
+declare global {
+  var __connectionManager: ConnectionManager | undefined;
+}
+
+export const connectionManager =
+  global.__connectionManager ?? new ConnectionManager();
+
+if (!global.__connectionManager) {
+  global.__connectionManager = connectionManager;
+}

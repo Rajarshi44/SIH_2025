@@ -9,6 +9,7 @@ Your Blynk-based system has been successfully converted to a modern WebSocket ar
 ## 📦 What Was Done
 
 ### ✅ Backend Server
+
 - [x] WebSocket server running on port 3000
 - [x] Dual channels: `/ws/device` and `/ws/dashboard`
 - [x] JWT authentication for dashboard
@@ -18,6 +19,7 @@ Your Blynk-based system has been successfully converted to a modern WebSocket ar
 - [x] Auto-reconnection support
 
 ### ✅ ESP32 Firmware
+
 - [x] Converted from Blynk to WebSocket
 - [x] All hardware pins preserved (same as Blynk version)
 - [x] INA219 current sensors working (0x40, 0x41)
@@ -28,6 +30,7 @@ Your Blynk-based system has been successfully converted to a modern WebSocket ar
 - [x] Auto-reconnect on WiFi drop
 
 ### ✅ Dashboard Frontend
+
 - [x] Real-time WebSocket connection
 - [x] Motor control cards
 - [x] Live charts (voltage/current/RPM)
@@ -42,19 +45,24 @@ Your Blynk-based system has been successfully converted to a modern WebSocket ar
 ## 🚀 Quick Start (3 Steps)
 
 ### Step 1: Start Backend
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 ✅ Server at: http://localhost:3000
 
 ### Step 2: Update ESP32 IP
+
 Edit `sih.ino` line 16:
+
 ```cpp
 const char* ws_host = "YOUR_COMPUTER_IP";  // e.g., "192.168.1.100"
 ```
 
 ### Step 3: Upload & Test
+
 1. Arduino IDE → Upload to ESP32
 2. Open Serial Monitor (115200 baud)
 3. Wait for "[WS] ✅ Connected to server!"
@@ -66,10 +74,12 @@ const char* ws_host = "YOUR_COMPUTER_IP";  // e.g., "192.168.1.100"
 **URL:** http://localhost:3000/dashboard
 
 **Login:**
+
 - Username: `admin`
 - Password: `admin123`
 
 **What You'll See:**
+
 - ✅ Real-time telemetry (voltage, current, RPM)
 - ✅ Motor control toggles and sliders
 - ✅ Live charts updating every second
@@ -81,6 +91,7 @@ const char* ws_host = "YOUR_COMPUTER_IP";  // e.g., "192.168.1.100"
 ## 🔌 Hardware Connections (Unchanged from Blynk)
 
 ### ESP32 Pins
+
 ```
 Motor A Control:
   GPIO 25 → ENA (PWM)
@@ -106,18 +117,21 @@ INA219 Sensors:
 ## 🧪 Testing Checklist
 
 ### Backend Server
+
 - [ ] Server starts without errors
 - [ ] Shows: `[WebSocket] Server initialized on /ws`
 - [ ] Port 3000 is accessible
 - [ ] Dashboard loads at http://localhost:3000
 
 ### ESP32 Connection
+
 - [ ] WiFi connects (check SSID/password)
 - [ ] I2C scanner finds 0x40 and 0x41
 - [ ] WebSocket connects to server
 - [ ] Serial shows: `[WS] ✅ Connected`
 
 ### Dashboard Functionality
+
 - [ ] Login successful
 - [ ] Green WiFi indicator visible
 - [ ] Motor cards show telemetry data
@@ -126,6 +140,7 @@ INA219 Sensors:
 - [ ] Charts update in real-time
 
 ### Motor Control
+
 - [ ] Click toggle → motor starts
 - [ ] Serial shows: `📥 Command: START`
 - [ ] Motor physically runs
@@ -133,6 +148,7 @@ INA219 Sensors:
 - [ ] Click toggle off → motor stops
 
 ### Telemetry Flow
+
 - [ ] ESP32 sends data every 500ms
 - [ ] Dashboard receives updates
 - [ ] Voltage/current display updates
@@ -144,7 +160,9 @@ INA219 Sensors:
 ## 🐛 Troubleshooting
 
 ### "WebSocket not connecting"
+
 **Check:**
+
 - [ ] Backend server is running
 - [ ] ESP32 has correct server IP
 - [ ] Both on same WiFi network
@@ -152,21 +170,27 @@ INA219 Sensors:
 - [ ] Device token matches (esp32-device-token-xyz)
 
 ### "Dashboard not updating"
+
 **Check:**
+
 - [ ] Logged in with valid credentials
 - [ ] Green WiFi icon in dashboard
 - [ ] Browser console for WebSocket errors
 - [ ] JWT token valid (login again)
 
 ### "Motors not responding"
+
 **Check:**
+
 - [ ] ESP32 receiving commands (Serial Monitor)
 - [ ] L298N power supply connected
 - [ ] Motor driver wiring correct
 - [ ] PWM pins working (check with LED test)
 
 ### "No current/voltage readings"
+
 **Check:**
+
 - [ ] INA219 sensors powered (3.3V)
 - [ ] I2C wiring (SDA=21, SCL=22)
 - [ ] I2C scanner finds 0x40 and 0x41
@@ -220,14 +244,14 @@ Motor A STARTED (speed=128, forward=1)
 
 ## 🎯 Performance Metrics
 
-| Metric | Target | Status |
-|--------|--------|--------|
-| WebSocket Latency | <80ms | ✅ |
-| Telemetry Rate | 500ms | ✅ |
-| Auto-reconnect | 2-3s | ✅ |
-| Heartbeat | 20s | ✅ |
-| Concurrent Dashboards | 10 | ✅ |
-| ESP32 Devices | 1 | ✅ |
+| Metric                | Target | Status |
+| --------------------- | ------ | ------ |
+| WebSocket Latency     | <80ms  | ✅     |
+| Telemetry Rate        | 500ms  | ✅     |
+| Auto-reconnect        | 2-3s   | ✅     |
+| Heartbeat             | 20s    | ✅     |
+| Concurrent Dashboards | 10     | ✅     |
+| ESP32 Devices         | 1      | ✅     |
 
 ---
 
@@ -243,11 +267,13 @@ Motor A STARTED (speed=128, forward=1)
 ## 🔐 Security Notes
 
 **Current Setup (Development):**
+
 - JWT Secret: `sohojpaat-secret-key-2025-change-in-production`
 - Device Token: `esp32-device-token-xyz-change-in-production`
 - Demo Users: admin/admin123, operator/operator123
 
 **For Production:**
+
 - [ ] Change JWT_SECRET in `.env.local`
 - [ ] Change DEVICE_TOKEN in `.env.local`
 - [ ] Use strong passwords (bcrypt)
@@ -270,19 +296,20 @@ Motor A STARTED (speed=128, forward=1)
 
 ## ✅ Final Status
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Backend Server | ✅ Running | Port 3000 |
-| WebSocket | ✅ Active | /ws endpoint |
-| ESP32 Firmware | ✅ Ready | Upload required |
-| Dashboard | ✅ Live | Login: admin/admin123 |
-| Documentation | ✅ Complete | 5 files |
+| Component      | Status      | Notes                 |
+| -------------- | ----------- | --------------------- |
+| Backend Server | ✅ Running  | Port 3000             |
+| WebSocket      | ✅ Active   | /ws endpoint          |
+| ESP32 Firmware | ✅ Ready    | Upload required       |
+| Dashboard      | ✅ Live     | Login: admin/admin123 |
+| Documentation  | ✅ Complete | 5 files               |
 
 ---
 
 ## 🎉 SYSTEM IS READY FOR USE!
 
 **Total Implementation:**
+
 - ✅ 10 Backend modules
 - ✅ 1 ESP32 firmware (converted)
 - ✅ 5 API endpoints

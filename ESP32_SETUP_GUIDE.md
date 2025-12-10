@@ -9,14 +9,17 @@ Your ESP32 firmware has been converted from Blynk to WebSocket communication.
 Install these in Arduino IDE (Sketch → Include Library → Manage Libraries):
 
 1. **WebSocketsClient** by Markus Sattler
+
    - Search: "WebSocketsClient"
    - Install: "WebSockets by Markus Sattler"
 
 2. **ArduinoJson** by Benoit Blanchon
+
    - Search: "ArduinoJson"
    - Version: 6.x or 7.x
 
-3. **Adafruit INA219** 
+3. **Adafruit INA219**
+
    - Search: "Adafruit INA219"
    - Also installs: Adafruit BusIO
 
@@ -27,12 +30,15 @@ Install these in Arduino IDE (Sketch → Include Library → Manage Libraries):
 ### Step 1: Find Your Computer's IP Address
 
 **Windows:**
+
 ```bash
 ipconfig
 ```
+
 Look for "IPv4 Address" under your active network adapter (e.g., `192.168.1.100`)
 
 **Mac/Linux:**
+
 ```bash
 ifconfig
 # or
@@ -95,16 +101,19 @@ Connecting to WebSocket server...
 ### 3. Common Issues
 
 **Problem: "WiFi connection failed"**
+
 - Check WiFi name and password
 - Ensure 2.4GHz WiFi (ESP32 doesn't support 5GHz)
 - Move ESP32 closer to router
 
 **Problem: "I2C device NOT found"**
+
 - Check INA219 wiring (SDA=21, SCL=22)
 - Verify I2C addresses (0x40, 0x41)
 - Check power supply to INA219
 
 **Problem: "WebSocket not connecting"**
+
 - Verify server IP address
 - Ensure backend server is running (`npm run dev`)
 - Check firewall settings
@@ -113,6 +122,7 @@ Connecting to WebSocket server...
 ## 🎯 Pin Connections (Same as Blynk Version)
 
 ### Motor Driver (L298N)
+
 ```
 Motor A:
   ENA → GPIO 25 (PWM)
@@ -126,6 +136,7 @@ Motor B:
 ```
 
 ### Current Sensors (INA219)
+
 ```
 Motor A Sensor (0x40):
   VCC → 3.3V
@@ -149,6 +160,7 @@ Motor B Sensor (0x41):
 ### Commands Received (from Dashboard)
 
 **START Motor:**
+
 ```json
 {
   "type": "command",
@@ -158,6 +170,7 @@ Motor B Sensor (0x41):
 ```
 
 **STOP Motor:**
+
 ```json
 {
   "type": "command",
@@ -167,6 +180,7 @@ Motor B Sensor (0x41):
 ```
 
 **SET_SPEED (0-100%):**
+
 ```json
 {
   "type": "command",
@@ -179,6 +193,7 @@ Motor B Sensor (0x41):
 ### Telemetry Sent (to Dashboard)
 
 Sent every **500ms**:
+
 ```json
 {
   "type": "telemetry",
@@ -202,17 +217,21 @@ Sent every **500ms**:
 ## 🚀 Quick Test Sequence
 
 1. **Start Backend Server:**
+
    ```bash
    cd frontend
    npm run dev
    ```
+
    Server should show: `[WebSocket] Server initialized on /ws`
 
 2. **Upload ESP32 Code:**
+
    - Arduino IDE → Upload
    - Open Serial Monitor (115200 baud)
 
 3. **Verify Connection:**
+
    - ESP32 Serial: `[WS] ✅ Connected to server!`
    - Server Terminal: `[Device] Connected: esp32_1 from 192.168.1.105`
 
@@ -225,6 +244,7 @@ Sent every **500ms**:
 ## 🔍 Debugging Tips
 
 ### Check WebSocket Connection
+
 ```
 Serial Monitor should show:
 - WiFi IP address
@@ -233,6 +253,7 @@ Serial Monitor should show:
 ```
 
 ### Check Server Logs
+
 ```
 Terminal should show:
 - [Device] Registered: esp32_1 from 192.168.1.105
@@ -241,6 +262,7 @@ Terminal should show:
 ```
 
 ### Check Dashboard
+
 ```
 Browser console should show:
 - [WebSocket] Telemetry from esp32_1
@@ -251,18 +273,21 @@ Browser console should show:
 ## ⚙️ Advanced Configuration
 
 ### Change Telemetry Rate
+
 ```cpp
 // Line ~56
 const unsigned long telemetryInterval = 500;  // Change to 1000 for 1 second
 ```
 
 ### Adjust Jam Detection
+
 ```cpp
 // Line ~60
 const float JAM_CURRENT_THRESHOLD = 1200.0;  // mA (increase if false positives)
 ```
 
 ### Change Default Motor Speed
+
 ```cpp
 // Line ~42-43
 int motorASpeed = 128;  // 0-255 (128 = 50% speed)
@@ -272,18 +297,22 @@ int motorBSpeed = 128;
 ## ✅ Success Indicators
 
 ### ✅ WiFi Connected
+
 - Serial: "✅ WiFi connected!"
 - Serial: "IP address: 192.168.1.XXX"
 
 ### ✅ WebSocket Connected
+
 - Serial: "[WS] ✅ Connected to server!"
 - Serial: "📊 Telemetry data..."
 
 ### ✅ Motors Responding
+
 - Serial: "📥 Command: START, Motor: A"
 - Serial: "Motor A STARTED (speed=128, forward=1)"
 
 ### ✅ Dashboard Receiving Data
+
 - Green WiFi indicator
 - Real-time voltage/current updates
 - RPM changing when motors run
@@ -291,6 +320,7 @@ int motorBSpeed = 128;
 ## 🎉 You're Ready!
 
 Your ESP32 is now:
+
 - ✅ Connected to WiFi
 - ✅ Communicating via WebSocket
 - ✅ Sending telemetry every 500ms

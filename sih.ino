@@ -11,11 +11,11 @@
 #include <Adafruit_INA219.h>
 
 // ============ WiFi Configuration ============
-const char ssid[] = "Deepam";
-const char pass[] = "buddy1234";
+const char* ssid = "Galaxy A14 5G";
+const char* password = "potatochips";
 
 // ============ WebSocket Configuration ============
-const char* ws_host = "10.244.220.187";  // CHANGE THIS TO YOUR COMPUTER'S IP
+const char* ws_host = "10.252.163.187";  // CHANGE THIS TO YOUR COMPUTER'S IP
 const uint16_t ws_port = 3000;
 const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz";
 
@@ -23,12 +23,11 @@ const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz
 #define ENA  25
 #define IN1  26
 #define IN2  27
-
-#define ENB  33
+ine ENB  33
 #define IN3  32
 #define IN4  35
 
-#define LED_BUILTIN 2  // Internal LED for testing
+#define LED 2  // Internal LED for testing (GPIO 2)
 
 // ============ PWM Configuration ============
 const uint32_t PWM_FREQ = 20000;
@@ -187,8 +186,8 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  pinMode(LED, OUTPUT);  // Set LED pin as output
+  digitalWrite(LED, LOW);  // Start with LED off
 
 
    ledcAttachChannel(ENA, PWM_FREQ, PWM_RES, PWM_CH_A);
@@ -304,14 +303,16 @@ void handleCommand(char* payload) {
     }
     else if (command == "LED_ON") {
       ledState = true;
-      digitalWrite(LED_BUILTIN, HIGH);
+      digitalWrite(LED, HIGH);  // Turn LED ON
       sendAck("LED turned ON");
+      sendTelemetry();  // Send immediate telemetry update
       Serial.println("💡 LED ON");
     }
     else if (command == "LED_OFF") {
       ledState = false;
-      digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(LED, LOW);  // Turn LED OFF
       sendAck("LED turned OFF");
+      sendTelemetry();  // Send immediate telemetry update
       Serial.println("💡 LED OFF");
     }
   }

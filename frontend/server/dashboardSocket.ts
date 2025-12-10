@@ -48,9 +48,7 @@ export function handleDashboardConnection(ws: ExtendedWebSocket, req: any) {
             JSON.stringify({
               type: "ack",
               success: sent,
-              message: sent
-                ? "Command sent to device"
-                : "No devices connected",
+              message: sent ? "Command sent to device" : "No devices connected",
             })
           );
         } else {

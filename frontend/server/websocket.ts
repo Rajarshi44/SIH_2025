@@ -15,9 +15,9 @@ export function initializeWebSocketServer(server: HTTPServer) {
     return wss;
   }
 
-  wss = new WebSocketServer({ server, path: "/ws" });
+  wss = new WebSocketServer({ server });
 
-  console.log("[WebSocket] Server initialized on /ws");
+  console.log("[WebSocket] Server initialized");
 
   // Handle new connections
   wss.on("connection", (ws: WebSocket, req) => {
