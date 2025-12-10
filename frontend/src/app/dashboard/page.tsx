@@ -7,6 +7,7 @@ import { Layout } from "@/components/Layout";
 import { WebSocketProvider } from "@/components/WebSocketProvider";
 import { RealtimeCharts } from "@/components/RealtimeCharts";
 import { EmergencyStop } from "@/components/EmergencyStop";
+import LEDControl from "@/components/LEDControl";
 import { Toaster } from "sonner";
 
 export default function DashboardPage() {
@@ -26,6 +27,11 @@ export default function DashboardPage() {
               </p>
             </div>
             <EmergencyStop />
+          </div>
+
+          {/* LED Test Control */}
+          <div className="max-w-md">
+            <LEDControl />
           </div>
 
           {/* Motor Controls */}

@@ -9,6 +9,14 @@ interface MotorState {
   isOn: boolean;
 }
 
+interface TelemetryData {
+  motorA: MotorState;
+  motorB: MotorState;
+  isJammed: boolean;
+  ledState: boolean;
+  timestamp: string;
+}
+
 interface SystemState {
   wifiConnected: boolean;
   rssi: number;
@@ -54,6 +62,7 @@ interface StoreState {
   motorB: MotorState;
   system: SystemState;
   settings: Settings;
+  telemetry: TelemetryData | null;
   history: {
     motorA: HistoryData;
     motorB: HistoryData;
@@ -61,6 +70,7 @@ interface StoreState {
   logs: Log[];
   jamAlerts: JamAlert[];
 
+  setTelemetry: (data: TelemetryData) => void;
   updateMotorA: (data: Partial<MotorState>) => void;
   updateMotorB: (data: Partial<MotorState>) => void;
   updateSystem: (data: Partial<SystemState>) => void;
@@ -93,6 +103,7 @@ const useStore = create<StoreState>((set, get) => ({
     status: "stopped",
     isOn: false,
   },
+  telemetry: null,
   system: {
     wifiConnected: false,
     rssi: 0,
@@ -113,6 +124,7 @@ const useStore = create<StoreState>((set, get) => ({
   logs: [],
   jamAlerts: [],
 
+  setTelemetry: (data) => set({ telemetry: data }),
   updateMotorA: (data) =>
     set((state) => ({ motorA: { ...state.motorA, ...data } })),
   updateMotorB: (data) =>
