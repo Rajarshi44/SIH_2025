@@ -38,7 +38,8 @@ export default function AnalyticsPage() {
       .length * 60;
 
   const energyEstimate = (
-    (((Math.abs(motorA.current || 0) + Math.abs(motorB.current || 0)) * (motorA.voltage + motorB.voltage)) /
+    (((Math.abs(motorA.current || 0) + Math.abs(motorB.current || 0)) *
+      (motorA.voltage + motorB.voltage)) /
       2000) *
     (totalRuntime / 3600)
   ).toFixed(2);
