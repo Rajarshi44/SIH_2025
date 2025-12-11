@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
       .length * 60;
 
   const energyEstimate = (
-    (((motorA.current + motorB.current) * (motorA.voltage + motorB.voltage)) /
+    (((Math.abs(motorA.current || 0) + Math.abs(motorB.current || 0)) * (motorA.voltage + motorB.voltage)) /
       2000) *
     (totalRuntime / 3600)
   ).toFixed(2);
@@ -46,7 +46,8 @@ export default function AnalyticsPage() {
   // Motor health score (0-100)
   const calculateHealthScore = (motor: typeof motorA) => {
     let score = 100;
-    if (motor.current > 1500) score -= 20;
+    const current = Math.abs(motor.current || 0);
+    if (current > 1500) score -= 20;
     if (motor.status === "jammed") score -= 30;
     if (motor.rpm < 100 && motor.isOn) score -= 15;
     return Math.max(score, 0);
