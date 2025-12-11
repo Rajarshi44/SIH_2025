@@ -5,6 +5,7 @@
 ### 1. **WebSocket Frame Error Fixes** (Server Side)
 
 #### **deviceSocket.ts** - Enhanced Message Validation
+
 - ✅ Added buffer type validation before processing
 - ✅ Added message size check (max 64KB) to prevent buffer overflow
 - ✅ Added empty message validation
@@ -12,6 +13,7 @@
 - ✅ Safe buffer-to-string conversion with try-catch
 
 #### **websocket.ts** - Improved Error Handling
+
 - ✅ Added close frame handler to catch invalid close codes
 - ✅ Improved uncaught exception handler to not crash server
 - ✅ Removed re-throwing of exceptions to prevent server crashes
@@ -21,6 +23,7 @@
 ### 2. **ESP32 LED Test Integration** (Hardware Side)
 
 #### **esp32_websocket_client.ino** - LED Control
+
 - ✅ Added `LED_PIN` definition (GPIO 2 - built-in LED)
 - ✅ Added `ledState` boolean variable
 - ✅ Added LED pin initialization in `setup()`
@@ -32,6 +35,7 @@
 ### 3. **Connection Status Display** (Frontend)
 
 #### **LEDControl.tsx** - Enhanced UI
+
 - ✅ Enlarged connection status banner (more prominent)
 - ✅ Changed text to "✓ Machine Connected" / "✗ Machine Disconnected"
 - ✅ Added description text: "ESP32 is online and ready to control"
@@ -43,6 +47,7 @@
 ## 🔧 How It Works
 
 ### WebSocket Error Prevention Flow:
+
 ```
 ESP32 sends data → Buffer validation → Size check → String conversion → JSON parse → Process message
                      ↓ (if invalid)    ↓ (if too large)  ↓ (if fails)    ↓ (if invalid)
@@ -50,6 +55,7 @@ ESP32 sends data → Buffer validation → Size check → String conversion → 
 ```
 
 ### Connection Status Logic:
+
 ```
 ESP32 sends telemetry every 1s → Server updates lastTelemetryTime
                                   ↓
@@ -60,6 +66,7 @@ Frontend checks: (Date.now() - lastTelemetryTime) < 5000
 ```
 
 ### LED Control Flow:
+
 ```
 User clicks LED button → Frontend sends command via WebSocket
                          ↓
@@ -81,12 +88,14 @@ Frontend updates UI → LED badge shows ON/OFF status
 ## 🚀 Testing Instructions
 
 ### 1. **Start the Server**
+
 ```bash
 cd frontend
 npm run dev
 ```
 
 ### 2. **Upload ESP32 Code**
+
 - Open `esp32_websocket_client.ino` in Arduino IDE
 - Update WiFi credentials:
   ```cpp
@@ -100,17 +109,20 @@ npm run dev
 - Upload to ESP32
 
 ### 3. **Verify Connection**
+
 - Open dashboard at `http://localhost:3000`
 - Look for green "✓ Machine Connected" banner in LED Control section
 - Server console should show: `[Device] esp32_1 connected`
 - ESP32 serial should show: `[WS] Connected to server`
 
 ### 4. **Test LED Control**
+
 - Click "Turn On" button → LED should light up
 - Click "Turn Off" button → LED should turn off
 - Check telemetry updates with `ledState: true/false`
 
 ### 5. **Test Error Handling**
+
 - Disconnect ESP32 (unplug or reset)
 - Banner should turn red: "✗ Machine Disconnected"
 - Server should NOT crash
@@ -119,22 +131,26 @@ npm run dev
 ## 🐛 Troubleshooting
 
 ### Server Still Crashing?
+
 - Check Node.js version (should be 18+)
 - Clear npm cache: `npm cache clean --force`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 
 ### ESP32 Not Connecting?
+
 - Verify WiFi credentials are correct
 - Check server IP matches your PC's IP
 - Ensure firewall allows port 3000
 - Check ESP32 serial monitor for error messages
 
 ### LED Not Responding?
+
 - Verify GPIO 2 LED on your ESP32 board
 - Some boards use different pins (check your board's pinout)
 - Check serial monitor for "LED ON" / "LED OFF" messages
 
 ### Connection Status Stuck?
+
 - Check browser console for WebSocket errors
 - Verify telemetry is being received (check Network tab)
 - Ensure `lastTelemetryTime` is updating in store
@@ -151,14 +167,17 @@ npm run dev
 ## 🔍 Files Modified
 
 ### Frontend:
+
 - ✅ `frontend/server/deviceSocket.ts` - Message validation
 - ✅ `frontend/server/websocket.ts` - Error handling
 - ✅ `frontend/src/components/LEDControl.tsx` - UI enhancement
 
 ### Hardware:
+
 - ✅ `esp32_websocket_client.ino` - LED control integration
 
 ### Documentation:
+
 - ✅ This file (`WEBSOCKET_FIX_SUMMARY.md`)
 
 ---
