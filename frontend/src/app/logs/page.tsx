@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Filter, Search } from "lucide-react";
+import {
+  Download,
+  Filter,
+  Search,
+  Play,
+  Square,
+  AlertOctagon,
+  Zap,
+  CheckCircle,
+} from "lucide-react";
 import { Card, Button, Badge } from "@/components/UI";
 import { Layout } from "@/components/Layout";
 import { WebSocketProvider } from "@/components/WebSocketProvider";
@@ -62,27 +71,65 @@ export default function LogsPage() {
   const getEventBadge = (event: string) => {
     switch (event) {
       case "Started":
-        return <Badge variant="success">{event}</Badge>;
+        return (
+          <Badge variant="success">
+            <span className="flex items-center gap-1">
+              <Play className="w-3 h-3" fill="currentColor" />
+              {event}
+            </span>
+          </Badge>
+        );
       case "Stopped":
-        return <Badge variant="default">{event}</Badge>;
+        return (
+          <Badge variant="default">
+            <span className="flex items-center gap-1">
+              <Square className="w-3 h-3" fill="currentColor" />
+              {event}
+            </span>
+          </Badge>
+        );
       case "Jam Detected":
-        return <Badge variant="danger">{event}</Badge>;
+        return (
+          <Badge variant="danger">
+            <span className="flex items-center gap-1">
+              <AlertOctagon className="w-3 h-3" />
+              {event}
+            </span>
+          </Badge>
+        );
       case "Speed Changed":
-        return <Badge variant="neon">{event}</Badge>;
+        return (
+          <Badge variant="neon">
+            <span className="flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              {event}
+            </span>
+          </Badge>
+        );
       default:
-        return <Badge>{event}</Badge>;
+        return (
+          <Badge>
+            <span className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3" />
+              {event}
+            </span>
+          </Badge>
+        );
     }
   };
 
   return (
     <WebSocketProvider>
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h1 className="text-3xl font-bold text-white">Event Logs</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Event Logs
+            </h1>
             <Button onClick={exportToCSV} className="flex items-center gap-2">
               <Download size={16} />
-              Export to CSV
+              <span className="hidden sm:inline">Export to CSV</span>
+              <span className="sm:hidden">Export</span>
             </Button>
           </div>
 
@@ -91,7 +138,7 @@ export default function LogsPage() {
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                   size={20}
                 />
                 <input
@@ -99,12 +146,12 @@ export default function LogsPage() {
                   placeholder="Search logs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-neon"
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-light-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="flex gap-2 overflow-x-auto">
-                <Filter className="text-gray-400 my-auto" size={20} />
+                <Filter className="text-gray-500 my-auto" size={20} />
                 {eventTypes.map((event) => (
                   <Button
                     key={event}
@@ -122,23 +169,23 @@ export default function LogsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-dark-600">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">
+                  <tr className="border-b border-light-300">
+                    <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Timestamp
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">
+                    <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Motor
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">
+                    <th className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Event
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">
+                    <th className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Voltage
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">
+                    <th className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Current
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">
+                    <th className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-600">
                       Duration
                     </th>
                   </tr>
@@ -148,7 +195,7 @@ export default function LogsPage() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="text-center py-8 text-gray-400"
+                        className="text-center py-8 text-gray-500"
                       >
                         No logs found
                       </td>
@@ -157,24 +204,24 @@ export default function LogsPage() {
                     filteredLogs.map((log) => (
                       <tr
                         key={log.id}
-                        className="border-b border-dark-700 hover:bg-dark-700/50 transition-colors"
+                        className="border-b border-light-200 hover:bg-light-100 transition-colors"
                       >
-                        <td className="py-3 px-4 text-sm text-gray-300 font-mono">
+                        <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-600 font-mono">
                           {format(log.timestamp, "MMM dd, HH:mm:ss")}
                         </td>
-                        <td className="py-3 px-4 text-sm text-white font-semibold">
+                        <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-900 font-semibold">
                           {log.motor}
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-2 sm:px-4">
                           {getEventBadge(log.event)}
                         </td>
-                        <td className="py-3 px-4 text-sm text-right text-white">
+                        <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-right text-gray-900">
                           {log.voltage?.toFixed(2) || "N/A"} V
                         </td>
-                        <td className="py-3 px-4 text-sm text-right text-white">
+                        <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-right text-gray-900">
                           {log.current?.toFixed(0) || "N/A"} mA
                         </td>
-                        <td className="py-3 px-4 text-sm text-right text-gray-300">
+                        <td className="py-3 px-2 sm:px-4 text-xs sm:text-sm text-right text-gray-700">
                           {log.duration || "N/A"}
                         </td>
                       </tr>
@@ -185,14 +232,16 @@ export default function LogsPage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-6 flex gap-4">
-              <div className="flex-1 bg-dark-700 p-3 rounded-lg">
-                <p className="text-xs text-gray-400">Total Logs</p>
-                <p className="text-2xl font-bold text-white">{logs.length}</p>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex-1 bg-light-100 p-3 rounded-lg border border-light-300">
+                <p className="text-xs text-gray-600">Total Logs</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                  {logs.length}
+                </p>
               </div>
-              <div className="flex-1 bg-dark-700 p-3 rounded-lg">
-                <p className="text-xs text-gray-400">Showing</p>
-                <p className="text-2xl font-bold text-neon">
+              <div className="flex-1 bg-light-100 p-3 rounded-lg border border-light-300">
+                <p className="text-xs text-gray-600">Showing</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">
                   {filteredLogs.length}
                 </p>
               </div>

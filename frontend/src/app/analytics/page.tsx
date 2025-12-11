@@ -4,7 +4,17 @@ import { Layout } from "@/components/Layout";
 import { WebSocketProvider } from "@/components/WebSocketProvider";
 import { Card, Badge } from "@/components/UI";
 import useStore from "@/store/useStore";
-import { Activity, Zap, AlertTriangle, TrendingUp, Wrench } from "lucide-react";
+import {
+  Activity,
+  Zap,
+  AlertTriangle,
+  TrendingUp,
+  Wrench,
+  Timer,
+  Battery,
+  AlertOctagon,
+  CheckCircle,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -70,33 +80,38 @@ export default function AnalyticsPage() {
   return (
     <WebSocketProvider>
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Analytics Dashboard
             </h1>
-            <p className="text-gray-400">
+            <p className="text-gray-600 text-sm sm:text-base">
               Performance metrics and system insights
             </p>
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-br from-dark-800 to-dark-900">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon/20 rounded-lg">
-                  <Activity className="text-neon" size={24} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Card className="bg-gradient-to-br from-white to-light-100">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-primary/20 rounded-lg relative">
+                  <Timer className="text-primary" size={20} />
+                  {totalRuntime > 0 && (
+                    <CheckCircle className="w-3 h-3 text-green-500 absolute -top-1 -right-1 bg-white rounded-full" />
+                  )}
                 </div>
                 <div>
-                  <p className="text-gray-400 text-sm">Total Runtime</p>
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-gray-600 text-xs sm:text-sm">
+                    Total Runtime
+                  </p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">
                     {Math.floor(totalRuntime / 60)}m
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card className="bg-gradient-to-br from-dark-800 to-dark-900">
+            <Card className="bg-gradient-to-br from-white to-light-100">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-red-500/20 rounded-lg">
                   <AlertTriangle className="text-red-400" size={24} />

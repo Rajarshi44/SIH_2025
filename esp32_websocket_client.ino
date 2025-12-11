@@ -29,7 +29,7 @@ const char* password = "potatochips";   // Change this
 // ============ WebSocket Configuration ============
 const char* ws_host = "10.121.155.187";  // Your server IP address
 const uint16_t ws_port = 3000;
-const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz";
+const char* ws_path = "/ws/device?device_id=esp32_1";  // No token required
 
 // ============ Motor Configuration ============
 #define MOTOR_A_ENA 25
@@ -39,6 +39,9 @@ const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz
 #define MOTOR_B_ENB 33
 #define MOTOR_B_IN3 32
 #define MOTOR_B_IN4 35
+
+// ============ LED Test Configuration ============
+#define LED_PIN 2  // Built-in LED on most ESP32 boards
 
 #define PWM_FREQ 5000
 #define PWM_RESOLUTION 8
@@ -65,6 +68,9 @@ struct MotorState {
 MotorState motorA = {false, 0, true, 0, 0, 0};
 MotorState motorB = {false, 0, true, 0, 0, 0};
 
+// ============ LED State ============
+bool ledState = false;
+
 // ============ Timing ============
 unsigned long lastTelemetry = 0;
 const unsigned long telemetryInterval = 1000; // Send every 1 second
@@ -89,6 +95,10 @@ void setup() {
   pinMode(MOTOR_A_IN2, OUTPUT);
   pinMode(MOTOR_B_IN3, OUTPUT);
   pinMode(MOTOR_B_IN4, OUTPUT);
+  
+  // Setup LED pin
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
   
   // Setup PWM
   ledcSetup(PWM_CHANNEL_A, PWM_FREQ, PWM_RESOLUTION);
@@ -211,6 +221,18 @@ void handleCommand(char* payload) {
       stopMotor('B');
       sendAck("All motors stopped (RESET)");
     }
+    else if (command == "LED_ON") {
+      digitalWrite(LED_PIN, HIGH);
+      ledState = true;
+      sendAck("LED turned ON");
+      Serial.println("LED ON");
+    }
+    else if (command == "LED_OFF") {
+      digitalWrite(LED_PIN, LOW);
+      ledState = false;
+      sendAck("LED turned OFF");
+      Serial.println("LED OFF");
+    }
   }
 }
 
@@ -309,6 +331,9 @@ void sendTelemetry() {
   // Check for jam detection (high current)
   bool isJammed = (motorA.current > 3.0 || motorB.current > 3.0);
   doc["isJammed"] = isJammed;
+  
+  // Add LED state to telemetry
+  doc["ledState"] = ledState;
   
   doc["timestamp"] = getISOTimestamp();
   

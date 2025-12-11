@@ -15,16 +15,31 @@ export function initializeWebSocketServer(server: HTTPServer) {
     return wss;
   }
 
-  wss = new WebSocketServer({ server });
+  // Create WebSocket server without attaching to HTTP server yet
+  wss = new WebSocketServer({ noServer: true });
 
   console.log("[WebSocket] Server initialized");
+
+  // Manually handle upgrade requests to filter paths
+  server.on("upgrade", (request, socket, head) => {
+    const url = request.url || "";
+
+    // Only handle our custom WebSocket paths - ignore everything else (including Next.js HMR)
+    if (url.includes("/ws/device") || url.includes("/ws/dashboard")) {
+      console.log(`[WebSocket] Handling upgrade for: ${url}`);
+      wss!.handleUpgrade(request, socket, head, (ws) => {
+        wss!.emit("connection", ws, request);
+      });
+    }
+    // For all other paths (including /_next/webpack-hmr), do nothing and let Next.js handle them
+  });
 
   // Handle new connections
   wss.on("connection", (ws: WebSocket, req) => {
     const extWs = ws as ExtendedWebSocket;
     const url = req.url || "";
 
-    console.log(`[WebSocket] New connection: ${url}`);
+    console.log(`[WebSocket] New connection established: ${url}`);
 
     // Add error handler immediately to catch any connection issues
     ws.on("error", (error: any) => {
@@ -34,7 +49,15 @@ export function initializeWebSocketServer(server: HTTPServer) {
           ws.terminate();
         }
       } catch (e) {
-        console.error("[WebSocket] Failed to terminate on error:", e);
+        // Silently handle termination errors
+      }
+    });
+
+    // Add close frame handler to catch invalid close codes
+    ws.on("close", (code, reason) => {
+      // Validate close code is in valid range
+      if (code < 1000 || code > 4999) {
+        console.warn(`[WebSocket] Invalid close code: ${code}`);
       }
     });
 
@@ -79,6 +102,24 @@ export function initializeWebSocketServer(server: HTTPServer) {
 
   wss.on("error", (error) => {
     console.error("[WebSocket] Server error:", error);
+  });
+
+  // Handle uncaught WebSocket errors at process level
+  process.removeAllListeners("uncaughtException"); // Remove old listeners
+  process.on("uncaughtException", (error: any) => {
+    if (
+      error.code === "WS_ERR_INVALID_CLOSE_CODE" ||
+      error.message?.includes("Invalid WebSocket frame") ||
+      error.message?.includes("invalid status code")
+    ) {
+      console.error("[WebSocket] Caught invalid frame error:", error.message);
+      // Don't crash the server, just log it
+      // This happens when ESP32 sends malformed close frames
+      return;
+    }
+    // Log other exceptions but don't crash in dev mode
+    console.error("❌ Uncaught Exception:", error.message);
+    console.error("Stack:", error.stack);
   });
 
   return wss;

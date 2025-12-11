@@ -27,19 +27,28 @@ export const RealtimeCharts = () => {
   const historyA = useStore((state) => state.history.motorA);
   const historyB = useStore((state) => state.history.motorB);
 
-  const getTimeWindowData = (history: typeof historyA) => {
+  const getTimeWindowData = (
+    history: typeof historyA,
+    motor: typeof motorA
+  ) => {
     const windows = { "30s": 30, "1m": 60, "5m": 300, "15m": 900 };
     const points = windows[timeWindow];
     const length = history.voltage.length;
     const start = Math.max(0, length - points);
 
-    return Array.from({ length: Math.min(points, length) }, (_, i) => ({
-      time: i,
-      voltage: history.voltage[start + i] || 0,
-      current: (history.current[start + i] || 0) / 1000, // Convert to A
-      rpm: history.rpm[start + i] || 0,
-      pwm: i === length - 1 ? motorA.speed || motorB.speed : 0,
-    }));
+    return Array.from({ length: Math.min(points, length) }, (_, i) => {
+      const voltage = history.voltage[start + i] || 0;
+      const current = history.current[start + i] || 0; // Already in Amps
+      const power = voltage * Math.abs(current); // Calculate power in Watts
+
+      return {
+        time: i,
+        voltage: voltage,
+        current: Math.abs(current), // Use absolute value for display
+        rpm: history.rpm[start + i] || 0,
+        power: power,
+      };
+    });
   };
 
   const exportToPNG = (chartId: string) => {
@@ -47,25 +56,28 @@ export const RealtimeCharts = () => {
     console.log(`Exporting ${chartId} to PNG`);
   };
 
-  const dataA = getTimeWindowData(historyA);
-  const dataB = getTimeWindowData(historyB);
+  const dataA = getTimeWindowData(historyA, motorA);
+  const dataB = getTimeWindowData(historyB, motorB);
 
   return (
     <Card>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Real-time Monitoring</h2>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          Real-time Monitoring
+        </h2>
+        <div className="flex flex-wrap gap-2">
           <div className="flex gap-1">
             {(["30s", "1m", "5m", "15m"] as const).map((window) => (
               <button
                 key={window}
                 onClick={() => setTimeWindow(window)}
-                className={`px-3 py-1 rounded text-sm ${
+                className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-medium transition-all ${
                   timeWindow === window
-                    ? "bg-neon text-dark-900"
-                    : "bg-dark-700 text-gray-400 hover:bg-dark-600"
+                    ? "bg-primary text-white shadow-md scale-105"
+                    : "bg-light-200 text-gray-600 hover:bg-light-300 hover:scale-105"
                 }`}
               >
+                {timeWindow === window && "● "}
                 {window}
               </button>
             ))}
@@ -80,45 +92,97 @@ export const RealtimeCharts = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Motor A Charts */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-neon">Motor A</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-primary">
+            Motor A
+          </h3>
 
-          <div className="bg-dark-700 p-4 rounded-lg">
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Voltage & Current</span>
+              <span className="text-xs sm:text-sm text-gray-600">
+                Voltage & Current
+              </span>
               <button
                 onClick={() => exportToPNG("motorA-vc")}
-                className="text-gray-400 hover:text-neon"
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
               >
                 <Download size={16} />
               </button>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dataA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#232e3f" />
-                <XAxis dataKey="time" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0a0e1a",
-                    border: "1px solid #232e3f",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
                   }}
-                  labelStyle={{ color: "#B6FF00" }}
+                  labelStyle={{ color: "#3b82f6" }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Line
                   type="monotone"
                   dataKey="voltage"
-                  stroke="#B6FF00"
+                  stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
+                  name="Voltage (V)"
                 />
                 <Line
                   type="monotone"
                   dataKey="current"
-                  stroke="#3b82f6"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Current (A)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs sm:text-sm text-gray-600">RPM</span>
+              <button
+                onClick={() => exportToPNG("motorA-rpm")}
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
+              >
+                <Download size={16} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={dataA}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                  }}
+                  labelStyle={{ color: "#3b82f6" }}
+                />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
+                <Line
+                  type="monotone"
+                  dataKey="rpm"
+                  stroke="#10b981"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -126,35 +190,44 @@ export const RealtimeCharts = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-dark-700 p-4 rounded-lg">
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">RPM</span>
+              <span className="text-xs sm:text-sm text-gray-600">
+                Power (Watts)
+              </span>
               <button
-                onClick={() => exportToPNG("motorA-rpm")}
-                className="text-gray-400 hover:text-neon"
+                onClick={() => exportToPNG("motorA-power")}
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
               >
                 <Download size={16} />
               </button>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dataA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#232e3f" />
-                <XAxis dataKey="time" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0a0e1a",
-                    border: "1px solid #232e3f",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
                   }}
-                  labelStyle={{ color: "#B6FF00" }}
+                  labelStyle={{ color: "#3b82f6" }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Line
                   type="monotone"
-                  dataKey="rpm"
-                  stroke="#10b981"
+                  dataKey="power"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   dot={false}
+                  name="Power (W)"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -163,42 +236,94 @@ export const RealtimeCharts = () => {
 
         {/* Motor B Charts */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-neon">Motor B</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-primary">
+            Motor B
+          </h3>
 
-          <div className="bg-dark-700 p-4 rounded-lg">
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">Voltage & Current</span>
+              <span className="text-xs sm:text-sm text-gray-600">
+                Voltage & Current
+              </span>
               <button
                 onClick={() => exportToPNG("motorB-vc")}
-                className="text-gray-400 hover:text-neon"
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
               >
                 <Download size={16} />
               </button>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dataB}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#232e3f" />
-                <XAxis dataKey="time" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0a0e1a",
-                    border: "1px solid #232e3f",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
                   }}
-                  labelStyle={{ color: "#B6FF00" }}
+                  labelStyle={{ color: "#3b82f6" }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Line
                   type="monotone"
                   dataKey="voltage"
-                  stroke="#B6FF00"
+                  stroke="#3b82f6"
                   strokeWidth={2}
                   dot={false}
+                  name="Voltage (V)"
                 />
                 <Line
                   type="monotone"
                   dataKey="current"
-                  stroke="#3b82f6"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Current (A)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs sm:text-sm text-gray-600">RPM</span>
+              <button
+                onClick={() => exportToPNG("motorB-rpm")}
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
+              >
+                <Download size={16} />
+              </button>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={dataB}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                  }}
+                  labelStyle={{ color: "#3b82f6" }}
+                />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
+                <Line
+                  type="monotone"
+                  dataKey="rpm"
+                  stroke="#10b981"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -206,35 +331,44 @@ export const RealtimeCharts = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-dark-700 p-4 rounded-lg">
+          <div className="bg-light-100 p-3 sm:p-4 rounded-lg border border-light-300">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-400">RPM</span>
+              <span className="text-xs sm:text-sm text-gray-600">
+                Power (Watts)
+              </span>
               <button
-                onClick={() => exportToPNG("motorB-rpm")}
-                className="text-gray-400 hover:text-neon"
+                onClick={() => exportToPNG("motorB-power")}
+                className="text-gray-500 hover:text-primary"
+                title="Export chart"
               >
                 <Download size={16} />
               </button>
             </div>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={dataB}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#232e3f" />
-                <XAxis dataKey="time" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="time"
+                  stroke="#6b7280"
+                  style={{ fontSize: "12px" }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: "12px" }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0a0e1a",
-                    border: "1px solid #232e3f",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
                   }}
-                  labelStyle={{ color: "#B6FF00" }}
+                  labelStyle={{ color: "#3b82f6" }}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: "12px" }} />
                 <Line
                   type="monotone"
-                  dataKey="rpm"
-                  stroke="#10b981"
+                  dataKey="power"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   dot={false}
+                  name="Power (W)"
                 />
               </LineChart>
             </ResponsiveContainer>

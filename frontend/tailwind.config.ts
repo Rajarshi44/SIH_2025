@@ -9,12 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        neon: "#B6FF00",
-        dark: {
-          900: "#0a0e1a",
-          800: "#121825",
-          700: "#1a2332",
-          600: "#232e3f",
+        primary: "#3b82f6",
+        accent: "#10b981",
+        light: {
+          50: "#ffffff",
+          100: "#f9fafb",
+          200: "#f3f4f6",
+          300: "#e5e7eb",
+          400: "#d1d5db",
         },
       },
       animation: {

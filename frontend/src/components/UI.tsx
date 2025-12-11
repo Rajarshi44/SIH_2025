@@ -20,11 +20,12 @@ export const Button = ({
 
   const variants = {
     primary:
-      "bg-neon text-dark-900 hover:bg-neon/90 hover:shadow-lg hover:shadow-neon/50",
+      "bg-primary text-white hover:bg-blue-600 hover:shadow-lg shadow-primary/20",
     secondary:
-      "bg-dark-700 text-white hover:bg-dark-600 border border-dark-600",
-    danger: "bg-red-600 text-white hover:bg-red-700",
-    ghost: "bg-transparent text-neon border border-neon/30 hover:bg-neon/10",
+      "bg-light-200 text-gray-900 hover:bg-light-300 border border-light-400",
+    danger: "bg-red-600 text-white hover:bg-red-700 shadow-md",
+    ghost:
+      "bg-transparent text-primary border border-primary/30 hover:bg-primary/10",
   };
 
   const sizes = {
@@ -57,8 +58,8 @@ export const Card = ({
   return (
     <div
       className={`
-        bg-dark-800 rounded-xl border border-dark-600 p-6 
-        transition-all duration-300 hover:border-neon/30
+        bg-white rounded-xl border border-light-300 p-4 sm:p-6 shadow-md
+        transition-all duration-300 hover:shadow-lg hover:border-primary/30
         ${glow ? "animate-glow" : ""}
         ${className}
       `}
@@ -81,11 +82,11 @@ export const Badge = ({
   className = "",
 }: BadgeProps) => {
   const variants = {
-    default: "bg-dark-700 text-gray-300",
-    success: "bg-green-500/20 text-green-400 border border-green-500/30",
-    warning: "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
-    danger: "bg-red-500/20 text-red-400 border border-red-500/30",
-    neon: "bg-neon/20 text-neon border border-neon/30",
+    default: "bg-light-200 text-gray-700",
+    success: "bg-green-100 text-green-700 border border-green-300",
+    warning: "bg-yellow-100 text-yellow-700 border border-yellow-300",
+    danger: "bg-red-100 text-red-700 border border-red-300",
+    neon: "bg-blue-100 text-primary border border-primary/30",
   };
 
   return (
@@ -127,19 +128,26 @@ export const Toggle = ({
         <div
           className={`
           block w-14 h-8 rounded-full transition-all duration-300
-          ${checked ? "bg-neon" : "bg-dark-600"}
+          ${checked ? "bg-primary shadow-md shadow-primary/30" : "bg-light-300"}
           ${!disabled && "hover:opacity-90"}
         `}
         ></div>
         <div
           className={`
           absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all duration-300 shadow-lg
+          flex items-center justify-center
           ${checked ? "translate-x-6" : "translate-x-0"}
         `}
-        ></div>
+        >
+          {checked ? (
+            <span className="text-primary text-xs font-bold">✓</span>
+          ) : (
+            <span className="text-gray-400 text-xs font-bold">○</span>
+          )}
+        </div>
       </div>
       {label && (
-        <span className="ml-3 text-gray-300 font-medium select-none">
+        <span className="ml-3 text-gray-700 font-medium select-none">
           {label}
         </span>
       )}
@@ -180,8 +188,8 @@ export const Slider = ({
     <div className="w-full">
       {label && (
         <div className="flex justify-between mb-2">
-          <label className="text-sm font-medium text-gray-300">{label}</label>
-          <span className="text-sm font-bold text-neon">{value}</span>
+          <label className="text-sm font-medium text-gray-700">{label}</label>
+          <span className="text-sm font-bold text-primary">{value}</span>
         </div>
       )}
       <div className="relative py-2">
@@ -197,8 +205,8 @@ export const Slider = ({
           aria-label={label || "slider"}
           style={{
             background: disabled
-              ? "#232e3f"
-              : `linear-gradient(to right, #B6FF00 0%, #B6FF00 ${percentage}%, #232e3f ${percentage}%, #232e3f 100%)`,
+              ? "#d1d5db"
+              : `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`,
           }}
         />
       </div>
@@ -220,10 +228,10 @@ export const Alert = ({
   className = "",
 }: AlertProps) => {
   const variants = {
-    info: "bg-blue-500/20 border-blue-500/30 text-blue-300",
-    success: "bg-green-500/20 border-green-500/30 text-green-300",
-    warning: "bg-yellow-500/20 border-yellow-500/30 text-yellow-300",
-    danger: "bg-red-500/20 border-red-500/30 text-red-300",
+    info: "bg-blue-100 border-blue-300 text-blue-800",
+    success: "bg-green-100 border-green-300 text-green-800",
+    warning: "bg-yellow-100 border-yellow-300 text-yellow-800",
+    danger: "bg-red-100 border-red-300 text-red-800",
   };
 
   return (

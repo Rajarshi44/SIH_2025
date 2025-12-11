@@ -17,7 +17,7 @@ const char* password = "potatochips";
 // ============ WebSocket Configuration ============
 const char* ws_host = "10.121.155.187";  // CHANGE THIS TO YOUR COMPUTER'S IP
 const uint16_t ws_port = 3000;
-const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz";
+const char* ws_path = "/ws/device?device_id=esp32_1";  // No token required
 
 // ============ Pin Configuration (Same as Blynk version) ============
 #define ENA  25
@@ -66,8 +66,11 @@ unsigned long lastPing = 0;
 const unsigned long pingInterval = 20000;  // 20 seconds
 
 // ============ Jam Detection ============
-const float JAM_CURRENT_THRESHOLD = 3000.0;  // Increased threshold to 3000mA (3A)
-const unsigned long MOTOR_STARTUP_GRACE_PERIOD = 3000;  // 3 seconds grace period after motor starts
+const float JAM_CURRENT_THRESHOLD = 5000.0;  // Increased to 5000mA (5A) - very high to avoid false positives
+const unsigned long MOTOR_STARTUP_GRACE_PERIOD = 10000;  // 10 seconds grace period after motor starts
+const unsigned long JAM_SUSTAINED_TIME = 5000;  // Must sustain high current for 5 seconds
+const int JAM_MIN_SPEED_CHECK = 100;  // Only check jam if speed > 100 (40% of 255)
+bool jamDetectionEnabled = false;  // Disable jam detection by default for testing
 unsigned long motorAStartTime = 0;
 unsigned long motorBStartTime = 0;
 unsigned long jamStartTimeA = 0;
@@ -327,6 +330,20 @@ void handleCommand(char* payload) {
       sendAck("All motors stopped (RESET)");
       sendStatus("IDLE", "System reset - all motors stopped");
     }
+    else if (command == "ENABLE_JAM_DETECTION") {
+      jamDetectionEnabled = true;
+      sendAck("Jam detection ENABLED");
+      Serial.println("✓ Jam detection ENABLED");
+    }
+    else if (command == "DISABLE_JAM_DETECTION") {
+      jamDetectionEnabled = false;
+      isJammedA = false;
+      isJammedB = false;
+      jamStartTimeA = 0;
+      jamStartTimeB = 0;
+      sendAck("Jam detection DISABLED");
+      Serial.println("✓ Jam detection DISABLED");
+    }
     else if (command == "LED_ON") {
       ledState = true;
       digitalWrite(LED, HIGH);  // Turn LED ON
@@ -371,20 +388,27 @@ void readSensors(float &avgCurrentA, float &voltageA, float &avgCurrentB, float 
 
 // ============ Jam Detection ============
 void detectJams(float currentA, float currentB) {
+  // Skip if jam detection is disabled
+  if (!jamDetectionEnabled) {
+    return;
+  }
+  
   unsigned long currentTime = millis();
   
   // Motor A jam detection - only check if motor is running with sufficient speed
   // and current is abnormally high (indicates stall/jam)
-  if (motorAOn && motorASpeed > 50) {  // Only check if speed is above 50 (20% of 255)
+  if (motorAOn && motorASpeed > JAM_MIN_SPEED_CHECK) {  // Only check if speed is above 40%
     // Skip jam detection during startup grace period
     if (currentTime - motorAStartTime > MOTOR_STARTUP_GRACE_PERIOD) {
       // Calculate expected current threshold based on speed
-      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorASpeed * 2.0);
+      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorASpeed * 5.0);  // More generous multiplier
       
       if (currentA > expectedMaxCurrent) {
         if (jamStartTimeA == 0) {
           jamStartTimeA = currentTime;
-        } else if (currentTime - jamStartTimeA > 2000) {  // Sustained high current for 2 seconds
+          Serial.printf("⚠️ Motor A high current detected: %.0fmA (threshold: %.0fmA)\n", 
+                        currentA, expectedMaxCurrent);
+        } else if (currentTime - jamStartTimeA > JAM_SUSTAINED_TIME) {  // Sustained high current for 5 seconds
           if (!isJammedA) {
             isJammedA = true;
             Serial.printf("⚠️ MOTOR A JAMMED! Current: %.0fmA (threshold: %.0fmA)\n", 
@@ -409,16 +433,18 @@ void detectJams(float currentA, float currentB) {
   }
   
   // Motor B jam detection - same logic
-  if (motorBOn && motorBSpeed > 50) {  // Only check if speed is above 50 (20% of 255)
+  if (motorBOn && motorBSpeed > JAM_MIN_SPEED_CHECK) {  // Only check if speed is above 40%
     // Skip jam detection during startup grace period
     if (currentTime - motorBStartTime > MOTOR_STARTUP_GRACE_PERIOD) {
       // Calculate expected current threshold based on speed
-      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorBSpeed * 2.0);
+      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorBSpeed * 5.0);  // More generous multiplier
       
       if (currentB > expectedMaxCurrent) {
         if (jamStartTimeB == 0) {
           jamStartTimeB = currentTime;
-        } else if (currentTime - jamStartTimeB > 2000) {  // Sustained high current for 2 seconds
+          Serial.printf("⚠️ Motor B high current detected: %.0fmA (threshold: %.0fmA)\n", 
+                        currentB, expectedMaxCurrent);
+        } else if (currentTime - jamStartTimeB > JAM_SUSTAINED_TIME) {  // Sustained high current for 5 seconds
           if (!isJammedB) {
             isJammedB = true;
             Serial.printf("⚠️ MOTOR B JAMMED! Current: %.0fmA (threshold: %.0fmA)\n", 
@@ -472,7 +498,13 @@ void sendTelemetry() {
   
   String json;
   serializeJson(doc, json);
-  webSocket.sendTXT(json);
+  
+  // Only send if connected and validate JSON length
+  if (webSocket.isConnected() && json.length() > 0 && json.length() < 2048) {
+    webSocket.sendTXT(json);
+  } else if (!webSocket.isConnected()) {
+    Serial.println("⚠️ WebSocket not connected, skipping telemetry");
+  }
   
   // Print to serial for debugging
   Serial.printf("📊 A: %.2fV %.0fmA (%s) | B: %.2fV %.0fmA (%s)\n", 
@@ -482,6 +514,11 @@ void sendTelemetry() {
 
 // ============ Send Status Update ============
 void sendStatus(String state, String message) {
+  if (!webSocket.isConnected()) {
+    Serial.println("⚠️ WebSocket not connected, skipping status");
+    return;
+  }
+  
   StaticJsonDocument<128> doc;
   doc["type"] = "status";
   doc["state"] = state;
@@ -489,11 +526,19 @@ void sendStatus(String state, String message) {
   
   String json;
   serializeJson(doc, json);
-  webSocket.sendTXT(json);
+  
+  if (json.length() > 0 && json.length() < 256) {
+    webSocket.sendTXT(json);
+  }
 }
 
 // ============ Send ACK ============
 void sendAck(String message) {
+  if (!webSocket.isConnected()) {
+    Serial.println("⚠️ WebSocket not connected, skipping ACK");
+    return;
+  }
+  
   StaticJsonDocument<128> doc;
   doc["type"] = "ack";
   doc["message"] = message;
@@ -501,7 +546,10 @@ void sendAck(String message) {
   
   String json;
   serializeJson(doc, json);
-  webSocket.sendTXT(json);
+  
+  if (json.length() > 0 && json.length() < 256) {
+    webSocket.sendTXT(json);
+  }
 }
 
 // ============ Get ISO Timestamp ============

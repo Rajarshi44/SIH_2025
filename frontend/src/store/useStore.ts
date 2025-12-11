@@ -20,9 +20,11 @@ interface TelemetryData {
 
 interface SystemState {
   wifiConnected: boolean;
+  deviceConnected: boolean; // ESP32 device connection
   rssi: number;
   uptime: number;
   packetLoss: number;
+  lastTelemetryTime: number; // Track last telemetry received
 }
 
 interface Settings {
@@ -107,9 +109,11 @@ const useStore = create<StoreState>((set, get) => ({
   telemetry: null,
   system: {
     wifiConnected: false,
-    rssi: 0,
+    deviceConnected: false,
+    rssi: -70,
     uptime: 0,
     packetLoss: 0,
+    lastTelemetryTime: 0,
   },
   settings: {
     apiEndpoint: "http://192.168.1.100",

@@ -18,8 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-dark-900">
-        <BackgroundAnimation />
+      <body className="bg-light-100">
         <div className="relative z-10">{children}</div>
       </body>
     </html>

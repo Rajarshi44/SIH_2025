@@ -6,20 +6,12 @@ import { parse } from "url";
 
 export function handleDashboardConnection(ws: ExtendedWebSocket, req: any) {
   const { query } = parse(req.url || "", true);
-  const token = query.token as string;
+  const userId = (query.user_id as string) || "dashboard_user";
 
-  // Validate JWT token
-  const payload = verifyToken(token);
-  if (!payload) {
-    console.log("[Dashboard] Invalid token");
-    ws.close(1008, "Invalid token");
-    return;
-  }
-
-  // Register dashboard
-  ws.userId = payload.userId;
+  // Register dashboard (no auth required)
+  ws.userId = userId;
   ws.isAlive = true;
-  connectionManager.registerDashboard(payload.userId, ws);
+  connectionManager.registerDashboard(userId, ws);
 
   // Send current connection stats
   ws.send(
@@ -38,9 +30,7 @@ export function handleDashboardConnection(ws: ExtendedWebSocket, req: any) {
       // Handle commands
       if (message.type === "command") {
         if (validateCommand(message)) {
-          console.log(
-            `[Dashboard] Command from ${payload.username}: ${message.command}`
-          );
+          console.log(`[Dashboard] Command from ${userId}: ${message.command}`);
           const sent = connectionManager.forwardCommand(message);
 
           // Send ACK to dashboard
@@ -88,14 +78,14 @@ export function handleDashboardConnection(ws: ExtendedWebSocket, req: any) {
 
   // Handle close
   ws.on("close", () => {
-    console.log(`[Dashboard] Disconnected: ${payload.username}`);
-    connectionManager.removeDashboard(payload.userId);
+    console.log(`[Dashboard] Disconnected: ${userId}`);
+    connectionManager.removeDashboard(userId);
   });
 
   // Handle error
   ws.on("error", (error) => {
-    console.error(`[Dashboard] Error on ${payload.username}:`, error);
+    console.error(`[Dashboard] Error on ${userId}:`, error);
   });
 
-  console.log(`[Dashboard] Connected: ${payload.username}`);
+  console.log(`[Dashboard] Connected: ${userId}`);
 }

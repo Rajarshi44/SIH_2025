@@ -3,7 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, Settings, Menu, X, BarChart3 } from "lucide-react";
+import {
+  Home,
+  FileText,
+  Settings,
+  Menu,
+  X,
+  BarChart3,
+  Gauge,
+  ScrollText,
+  Sliders,
+} from "lucide-react";
 import Image from "next/image";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -11,20 +21,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   const navItems = [
-    { path: "/dashboard", icon: Home, label: "Dashboard" },
+    { path: "/dashboard", icon: Gauge, label: "Dashboard" },
     { path: "/analytics", icon: BarChart3, label: "Analytics" },
-    { path: "/logs", icon: FileText, label: "Logs" },
-    { path: "/settings", icon: Settings, label: "Settings" },
+    { path: "/logs", icon: ScrollText, label: "Logs" },
+    { path: "/settings", icon: Sliders, label: "Settings" },
   ];
 
   const isActive = (path: string) => pathname === path;
 
   return (
-    <div className="min-h-screen bg-dark-900 text-white">
+    <div className="min-h-screen bg-light-100 text-gray-900">
       {/* Mobile Menu Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-dark-800 rounded-lg border border-dark-600"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg border border-light-300 shadow-md"
       >
         {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -32,7 +42,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-dark-800 border-r border-dark-600 
+          fixed top-0 left-0 h-full w-64 bg-white border-r border-light-300 shadow-lg
           transform transition-transform duration-300 z-40
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
@@ -40,7 +50,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 relative bg-white rounded-lg p-1">
+            <div className="w-12 h-12 relative bg-primary rounded-lg p-1">
               <Image
                 src="/icon.jpg"
                 alt="Sohojpaat Logo"
@@ -50,8 +60,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               />
             </div>
             <div>
-              <h1 className="font-bold text-lg text-white">Sohojpaat</h1>
-              <p className="text-xs text-gray-400">IoT Dashboard</p>
+              <h1 className="font-bold text-lg text-gray-900">Sohojpaat</h1>
+              <p className="text-xs text-gray-500">IoT Dashboard</p>
             </div>
           </div>
 
@@ -65,8 +75,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   flex items-center gap-3 px-4 py-3 rounded-lg transition-all
                   ${
                     isActive(item.path)
-                      ? "bg-neon text-dark-900 font-semibold"
-                      : "text-gray-400 hover:bg-dark-700 hover:text-white"
+                      ? "bg-primary text-white font-semibold shadow-md"
+                      : "text-gray-600 hover:bg-light-200 hover:text-gray-900"
                   }
                 `}
               >
@@ -78,10 +88,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-dark-600">
-          <div className="text-xs text-gray-400">
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-light-300">
+          <div className="text-xs text-gray-500">
             <p>SohojPaat IoT Platform</p>
-            <p className="text-neon">v1.0.0</p>
+            <p className="text-primary font-semibold">v1.0.0</p>
           </div>
         </div>
       </aside>
@@ -89,13 +99,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Overlay */}
       {sidebarOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/30 z-30"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main Content */}
-      <main className="lg:ml-64 p-6 lg:p-8">{children}</main>
+      <main className="lg:ml-64 p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );
 };

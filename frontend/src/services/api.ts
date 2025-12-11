@@ -129,23 +129,19 @@ export class WebSocketService {
     if (typeof window === "undefined") return;
     if (this.ws?.readyState === WebSocket.OPEN) return;
 
-    const token = getAuthToken();
-    if (!token) {
-      console.warn("No auth token, cannot connect to WebSocket");
-      return;
-    }
-
-    // Determine WebSocket URL
+    // Determine WebSocket URL (no auth required)
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    this.url = `${protocol}//${host}/ws/dashboard?token=${token}`;
+    this.url = `${protocol}//${host}/ws/dashboard?user_id=dashboard_user`;
 
     try {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
         console.log("[WebSocket] Connected to dashboard");
-        useStore.getState().updateSystem({ wifiConnected: true });
+        useStore.getState().updateSystem({
+          wifiConnected: true,
+        });
         if (this.reconnectTimer) {
           clearTimeout(this.reconnectTimer);
           this.reconnectTimer = null;
@@ -167,7 +163,10 @@ export class WebSocketService {
 
       this.ws.onclose = () => {
         console.log("[WebSocket] Disconnected");
-        useStore.getState().updateSystem({ wifiConnected: false });
+        useStore.getState().updateSystem({
+          wifiConnected: false,
+          deviceConnected: false,
+        });
         this.scheduleReconnect();
       };
     } catch (error) {
@@ -190,6 +189,12 @@ export class WebSocketService {
 
     // Handle telemetry from ESP32
     if (data.type === "telemetry") {
+      // Mark device as connected when receiving telemetry
+      store.updateSystem({
+        deviceConnected: true,
+        lastTelemetryTime: Date.now(),
+      });
+
       // Store complete telemetry data
       store.setTelemetry(data);
 
@@ -284,22 +289,46 @@ export class WebSocketService {
   }
 
   send(data: any) {
+    console.log("[WebSocket] send() called with data:", data);
+    console.log("[WebSocket] readyState:", this.ws?.readyState);
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(data));
+      const jsonData = JSON.stringify(data);
+      console.log("[WebSocket] Sending:", jsonData);
+      this.ws.send(jsonData);
     } else {
-      console.warn("[WebSocket] Not connected, cannot send message");
+      console.warn(
+        "[WebSocket] Not connected, cannot send message. ReadyState:",
+        this.ws?.readyState
+      );
     }
   }
 
   // Send command via WebSocket
-  sendCommand(command: string, motor: string, value?: number) {
+  sendCommand(
+    command: string,
+    motor: string,
+    value?: number,
+    direction?: string
+  ) {
     this.send({
       type: "command",
       command,
       motor,
       value,
+      direction,
       timestamp: new Date().toISOString(),
     });
+  }
+
+  // LED Control commands
+  turnOnLED() {
+    console.log("[WebSocket] turnOnLED() called");
+    this.sendCommand("LED_ON", "A");
+  }
+
+  turnOffLED() {
+    console.log("[WebSocket] turnOffLED() called");
+    this.sendCommand("LED_OFF", "A");
   }
 }
 

@@ -1,6 +1,13 @@
 "use client";
 
-import { AlertTriangle, Zap, ShieldAlert } from "lucide-react";
+import {
+  AlertTriangle,
+  Zap,
+  ShieldAlert,
+  Octagon,
+  ShieldX,
+  Power,
+} from "lucide-react";
 import { motorService } from "@/services/api";
 import useStore from "@/store/useStore";
 import { toast } from "sonner";
@@ -51,7 +58,7 @@ export const EmergencyStop = () => {
     <div className="relative group">
       {/* Glow effect when motors are running */}
       {isAnyMotorRunning && (
-        <div className="absolute -inset-1 bg-red-500/30 rounded-2xl blur-xl animate-pulse" />
+        <div className="absolute -inset-1 bg-red-500/20 rounded-2xl blur-xl animate-pulse" />
       )}
 
       <button
@@ -61,8 +68,8 @@ export const EmergencyStop = () => {
         onMouseLeave={() => setIsPressed(false)}
         disabled={isStopping}
         className={`
-          relative w-full min-w-[280px] h-24 rounded-2xl
-          font-bold text-xl tracking-wider
+          relative w-full min-w-[240px] sm:min-w-[280px] h-20 sm:h-24 rounded-2xl
+          font-bold text-lg sm:text-xl tracking-wider
           transition-all duration-200 transform
           disabled:opacity-70 disabled:cursor-not-allowed
           ${
@@ -72,13 +79,13 @@ export const EmergencyStop = () => {
           }
           ${
             isStopping
-              ? "bg-gradient-to-br from-gray-700 to-gray-800"
+              ? "bg-gradient-to-br from-gray-400 to-gray-500"
               : isAnyMotorRunning
               ? "bg-gradient-to-br from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 animate-pulse"
-              : "bg-gradient-to-br from-red-600/60 via-red-700/60 to-red-800/60 hover:from-red-600/80 hover:via-red-700/80 hover:to-red-800/80"
+              : "bg-gradient-to-br from-red-400/60 via-red-500/60 to-red-600/60 hover:from-red-400/80 hover:via-red-500/80 hover:to-red-600/80"
           }
-          border-4 border-red-900/50
-          group-hover:border-red-500/50
+          border-4 border-red-300
+          group-hover:border-red-500
         `}
       >
         {/* Inner highlight */}
@@ -132,13 +139,19 @@ export const EmergencyStop = () => {
 
       {/* Helper text */}
       <div className="mt-3 text-center">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
           {isAnyMotorRunning ? (
-            <span className="text-red-400 font-semibold animate-pulse">
-              ⚠️ Click to immediately stop all motors
-            </span>
+            <>
+              <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse" />
+              <span className="text-red-600 font-semibold animate-pulse">
+                Click to immediately stop all motors
+              </span>
+            </>
           ) : (
-            "Emergency stop ready - stops all motors instantly"
+            <>
+              <ShieldAlert className="w-4 h-4 text-gray-500" />
+              <span>Emergency stop ready - stops all motors instantly</span>
+            </>
           )}
         </p>
       </div>

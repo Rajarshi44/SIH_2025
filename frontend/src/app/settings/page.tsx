@@ -8,6 +8,8 @@ import {
   Trash2,
   Moon,
   Sun,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Card, Button, Toggle, Slider } from "@/components/UI";
 import { Layout } from "@/components/Layout";
@@ -32,7 +34,9 @@ export default function SettingsPage() {
   const handleSave = () => {
     updateSettings(localSettings);
     setSaved(true);
-    toast.success("Settings saved successfully!");
+    toast.success("Settings saved successfully!", {
+      icon: <CheckCircle className="w-5 h-5" />,
+    });
     setTimeout(() => setSaved(false), 2000);
   };
 
@@ -47,7 +51,9 @@ export default function SettingsPage() {
       chartUpdateRate: 500,
     };
     setLocalSettings(defaultSettings);
-    toast.info("Settings reset to defaults");
+    toast.info("Settings reset to defaults", {
+      icon: <RefreshCw className="w-5 h-5" />,
+    });
   };
 
   const handleClearLogs = () => {
@@ -55,7 +61,9 @@ export default function SettingsPage() {
       confirm(`Are you sure you want to delete all ${logs.length} log entries?`)
     ) {
       clearLogs();
-      toast.success("All logs cleared");
+      toast.success("All logs cleared", {
+        icon: <CheckCircle className="w-5 h-5" />,
+      });
     }
   };
 
@@ -63,27 +71,36 @@ export default function SettingsPage() {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     setLocalSettings({ ...localSettings, theme: newTheme });
-    toast.info(`Theme switched to ${newTheme} mode`);
+    toast.info(`Theme switched to ${newTheme} mode`, {
+      icon:
+        newTheme === "light" ? (
+          <Sun className="w-5 h-5" />
+        ) : (
+          <Moon className="w-5 h-5" />
+        ),
+    });
   };
 
   return (
     <WebSocketProvider>
       <Layout>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex items-center gap-3">
-            <SettingsIcon className="text-neon" size={32} />
-            <h1 className="text-3xl font-bold text-white">Settings</h1>
+            <SettingsIcon className="text-primary" size={28} />
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Settings
+            </h1>
           </div>
 
           {/* API Configuration */}
           <Card>
-            <h2 className="text-xl font-bold text-white mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
               API Configuration
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   REST API Endpoint
                 </label>
                 <input
@@ -95,16 +112,16 @@ export default function SettingsPage() {
                       apiEndpoint: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-neon"
+                  className="w-full px-4 py-2 bg-white border border-light-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="http://192.168.1.100"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   Base URL for REST API calls
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   WebSocket Endpoint
                 </label>
                 <input
@@ -116,10 +133,10 @@ export default function SettingsPage() {
                       wsEndpoint: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-neon"
+                  className="w-full px-4 py-2 bg-white border border-light-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="ws://192.168.1.100:81"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   WebSocket URL for real-time data streaming
                 </p>
               </div>
@@ -128,11 +145,13 @@ export default function SettingsPage() {
 
           {/* Jam Detection Settings */}
           <Card>
-            <h2 className="text-xl font-bold text-white mb-4">Jam Detection</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+              Jam Detection
+            </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Max Current Threshold (mA)
                 </label>
                 <input
@@ -144,16 +163,16 @@ export default function SettingsPage() {
                       maxCurrentThreshold: Number(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-neon"
+                  className="w-full px-4 py-2 bg-white border border-light-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="500"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   Trigger jam alert when current exceeds this value
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   RPM Jam Threshold
                 </label>
                 <input
@@ -165,10 +184,10 @@ export default function SettingsPage() {
                       rpmJamThreshold: Number(e.target.value),
                     })
                   }
-                  className="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-neon"
+                  className="w-full px-4 py-2 bg-white border border-light-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="50"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-600 mt-1">
                   Trigger jam alert when RPM falls below this value while motor
                   is running
                 </p>
@@ -178,11 +197,11 @@ export default function SettingsPage() {
 
           {/* Theme Settings */}
           <Card>
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
               {theme === "dark" ? (
-                <Moon className="text-neon" size={24} />
+                <Moon className="text-primary" size={24} />
               ) : (
-                <Sun className="text-yellow-400" size={24} />
+                <Sun className="text-yellow-500" size={24} />
               )}
               Appearance
             </h2>
@@ -190,8 +209,8 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-white font-medium">Theme Mode</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-gray-900 font-medium">Theme Mode</p>
+                  <p className="text-xs text-gray-600">
                     Switch between dark and light theme
                   </p>
                 </div>
