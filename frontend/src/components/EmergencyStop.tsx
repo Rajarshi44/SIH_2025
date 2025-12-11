@@ -53,7 +53,7 @@ export const EmergencyStop = () => {
       {isAnyMotorRunning && (
         <div className="absolute -inset-1 bg-red-500/30 rounded-2xl blur-xl animate-pulse" />
       )}
-      
+
       <button
         onClick={handleEmergencyStop}
         onMouseDown={() => setIsPressed(true)}
@@ -83,7 +83,7 @@ export const EmergencyStop = () => {
       >
         {/* Inner highlight */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent via-white/5 to-white/10" />
-        
+
         {/* Striped warning pattern */}
         <div className="absolute inset-0 rounded-2xl opacity-10">
           <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_20px,rgba(0,0,0,0.3)_20px,rgba(0,0,0,0.3)_40px)]" />
