@@ -66,7 +66,10 @@ unsigned long lastPing = 0;
 const unsigned long pingInterval = 20000;  // 20 seconds
 
 // ============ Jam Detection ============
-const float JAM_CURRENT_THRESHOLD = 1200.0;  // mA
+const float JAM_CURRENT_THRESHOLD = 3000.0;  // Increased threshold to 3000mA (3A)
+const unsigned long MOTOR_STARTUP_GRACE_PERIOD = 3000;  // 3 seconds grace period after motor starts
+unsigned long motorAStartTime = 0;
+unsigned long motorBStartTime = 0;
 unsigned long jamStartTimeA = 0;
 unsigned long jamStartTimeB = 0;
 bool isJammedA = false;
@@ -103,12 +106,18 @@ void startMotor(char motor) {
   if (motor == 'A' || motor == 'B') {
     if (motor == 'A') {
       motorAOn = true;
+      motorAStartTime = millis();  // Record start time for grace period
+      isJammedA = false;  // Clear jam status
+      jamStartTimeA = 0;  // Reset jam timer
       digitalWrite(IN1, motorAForward ? HIGH : LOW);
       digitalWrite(IN2, motorAForward ? LOW : HIGH);
       ledcWrite(PWM_CH_A, motorASpeed);
       Serial.printf("Motor A STARTED (speed=%d, forward=%d)\n", motorASpeed, motorAForward);
     } else {
       motorBOn = true;
+      motorBStartTime = millis();  // Record start time for grace period
+      isJammedB = false;  // Clear jam status
+      jamStartTimeB = 0;  // Reset jam timer
       digitalWrite(IN3, motorBForward ? HIGH : LOW);
       digitalWrite(IN4, motorBForward ? LOW : HIGH);
       ledcWrite(PWM_CH_B, motorBSpeed);
@@ -362,36 +371,75 @@ void readSensors(float &avgCurrentA, float &voltageA, float &avgCurrentB, float 
 
 // ============ Jam Detection ============
 void detectJams(float currentA, float currentB) {
-  // Motor A jam detection
-  if (motorAOn && currentA > JAM_CURRENT_THRESHOLD && motorASpeed < 50) {
-    if (jamStartTimeA == 0) {
-      jamStartTimeA = millis();
-    } else if (millis() - jamStartTimeA > 1000) {
-      if (!isJammedA) {
-        isJammedA = true;
-        Serial.println("⚠️ MOTOR A JAMMED!");
-        sendStatus("ERROR", "Motor A jammed - high current detected");
+  unsigned long currentTime = millis();
+  
+  // Motor A jam detection - only check if motor is running with sufficient speed
+  // and current is abnormally high (indicates stall/jam)
+  if (motorAOn && motorASpeed > 50) {  // Only check if speed is above 50 (20% of 255)
+    // Skip jam detection during startup grace period
+    if (currentTime - motorAStartTime > MOTOR_STARTUP_GRACE_PERIOD) {
+      // Calculate expected current threshold based on speed
+      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorASpeed * 2.0);
+      
+      if (currentA > expectedMaxCurrent) {
+        if (jamStartTimeA == 0) {
+          jamStartTimeA = currentTime;
+        } else if (currentTime - jamStartTimeA > 2000) {  // Sustained high current for 2 seconds
+          if (!isJammedA) {
+            isJammedA = true;
+            Serial.printf("⚠️ MOTOR A JAMMED! Current: %.0fmA (threshold: %.0fmA)\n", 
+                          currentA, expectedMaxCurrent);
+            sendStatus("ERROR", "Motor A jammed - high current detected");
+          }
+        }
+      } else {
+        jamStartTimeA = 0;
+        if (isJammedA) {
+          isJammedA = false;
+          Serial.println("✓ Motor A jam cleared");
+        }
       }
     }
   } else {
     jamStartTimeA = 0;
-    isJammedA = false;
+    if (isJammedA && !motorAOn) {
+      isJammedA = false;
+      Serial.println("✓ Motor A jam cleared (motor stopped)");
+    }
   }
   
-  // Motor B jam detection
-  if (motorBOn && currentB > JAM_CURRENT_THRESHOLD && motorBSpeed < 50) {
-    if (jamStartTimeB == 0) {
-      jamStartTimeB = millis();
-    } else if (millis() - jamStartTimeB > 1000) {
-      if (!isJammedB) {
-        isJammedB = true;
-        Serial.println("⚠️ MOTOR B JAMMED!");
-        sendStatus("ERROR", "Motor B jammed - high current detected");
+  // Motor B jam detection - same logic
+  if (motorBOn && motorBSpeed > 50) {  // Only check if speed is above 50 (20% of 255)
+    // Skip jam detection during startup grace period
+    if (currentTime - motorBStartTime > MOTOR_STARTUP_GRACE_PERIOD) {
+      // Calculate expected current threshold based on speed
+      float expectedMaxCurrent = JAM_CURRENT_THRESHOLD + (motorBSpeed * 2.0);
+      
+      if (currentB > expectedMaxCurrent) {
+        if (jamStartTimeB == 0) {
+          jamStartTimeB = currentTime;
+        } else if (currentTime - jamStartTimeB > 2000) {  // Sustained high current for 2 seconds
+          if (!isJammedB) {
+            isJammedB = true;
+            Serial.printf("⚠️ MOTOR B JAMMED! Current: %.0fmA (threshold: %.0fmA)\n", 
+                          currentB, expectedMaxCurrent);
+            sendStatus("ERROR", "Motor B jammed - high current detected");
+          }
+        }
+      } else {
+        jamStartTimeB = 0;
+        if (isJammedB) {
+          isJammedB = false;
+          Serial.println("✓ Motor B jam cleared");
+        }
       }
     }
   } else {
     jamStartTimeB = 0;
-    isJammedB = false;
+    if (isJammedB && !motorBOn) {
+      isJammedB = false;
+      Serial.println("✓ Motor B jam cleared (motor stopped)");
+    }
   }
 }
 
@@ -427,8 +475,9 @@ void sendTelemetry() {
   webSocket.sendTXT(json);
   
   // Print to serial for debugging
-  Serial.printf("📊 A: %.2fV %.0fmA | B: %.2fV %.0fmA\n", 
-                voltageA, avgCurrentA, voltageB, avgCurrentB);
+  Serial.printf("📊 A: %.2fV %.0fmA (%s) | B: %.2fV %.0fmA (%s)\n", 
+                voltageA, avgCurrentA, motorAOn ? "ON" : "OFF",
+                voltageB, avgCurrentB, motorBOn ? "ON" : "OFF");
 }
 
 // ============ Send Status Update ============

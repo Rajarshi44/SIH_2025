@@ -178,7 +178,6 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
           min={0}
           max={255}
           label="Speed / PWM"
-          disabled={!motor.isOn}
         />
       </div>
 
