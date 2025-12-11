@@ -130,7 +130,12 @@ export default function AnalyticsPage() {
                 <div>
                   <p className="text-gray-400 text-sm">Avg Load</p>
                   <p className="text-2xl font-bold text-white">
-                    {(((Math.abs(motorA.current || 0) + Math.abs(motorB.current || 0)) / 40).toFixed(0))}%
+                    {(
+                      (Math.abs(motorA.current || 0) +
+                        Math.abs(motorB.current || 0)) /
+                      40
+                    ).toFixed(0)}
+                    %
                   </p>
                 </div>
               </div>
@@ -201,7 +206,10 @@ export default function AnalyticsPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-400 text-sm">Peak Load</span>
                       <span className="text-white">
-                        {((Math.abs(motorA.current || 0) / 2000) * 100).toFixed(0)}%
+                        {((Math.abs(motorA.current || 0) / 2000) * 100).toFixed(
+                          0
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
@@ -271,7 +279,10 @@ export default function AnalyticsPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-400 text-sm">Peak Load</span>
                       <span className="text-white">
-                        {((Math.abs(motorB.current || 0) / 2000) * 100).toFixed(0)}%
+                        {((Math.abs(motorB.current || 0) / 2000) * 100).toFixed(
+                          0
+                        )}
+                        %
                       </span>
                     </div>
                   </div>
@@ -353,12 +364,14 @@ export default function AnalyticsPage() {
                 <p className="text-gray-400 text-sm mb-2">Abnormal Current</p>
                 <Badge
                   variant={
-                    Math.abs(motorA.current || 0) > 1500 || Math.abs(motorB.current || 0) > 1500
+                    Math.abs(motorA.current || 0) > 1500 ||
+                    Math.abs(motorB.current || 0) > 1500
                       ? "danger"
                       : "success"
                   }
                 >
-                  {Math.abs(motorA.current || 0) > 1500 || Math.abs(motorB.current || 0) > 1500
+                  {Math.abs(motorA.current || 0) > 1500 ||
+                  Math.abs(motorB.current || 0) > 1500
                     ? "Detected"
                     : "Normal"}
                 </Badge>
