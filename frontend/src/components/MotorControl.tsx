@@ -34,7 +34,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       motor: motorName,
       event: checked ? "Started" : "Stopped",
       voltage: motor.voltage,
-      current: motor.current,
+      current: motor.current ?? undefined,
     });
 
     // Try API call in background
@@ -59,7 +59,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       motor: motorName,
       event: "Speed Changed",
       voltage: motor.voltage,
-      current: motor.current,
+      current: motor.current ?? undefined,
     });
 
     // Try API call in background
@@ -80,7 +80,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
       motor: motorName,
       event: `Direction: ${newDirection}`,
       voltage: motor.voltage,
-      current: motor.current,
+      current: motor.current ?? undefined,
     });
 
     // Send direction command to ESP32
