@@ -26,6 +26,18 @@ export function initializeWebSocketServer(server: HTTPServer) {
 
     console.log(`[WebSocket] New connection: ${url}`);
 
+    // Add error handler immediately to catch any connection issues
+    ws.on("error", (error: any) => {
+      console.error("[WebSocket] Connection error:", error.message);
+      try {
+        if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+          ws.terminate();
+        }
+      } catch (e) {
+        console.error("[WebSocket] Failed to terminate on error:", e);
+      }
+    });
+
     // Route based on path
     if (url.includes("/ws/device")) {
       handleDeviceConnection(extWs, req);
@@ -33,7 +45,7 @@ export function initializeWebSocketServer(server: HTTPServer) {
       handleDashboardConnection(extWs, req);
     } else {
       console.log("[WebSocket] Unknown path, closing");
-      ws.close(4000, "Unknown WebSocket path");
+      ws.close(1008, "Unknown WebSocket path");
     }
   });
 

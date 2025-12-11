@@ -15,7 +15,7 @@ const char* ssid = "Galaxy A14 5G";
 const char* password = "potatochips";
 
 // ============ WebSocket Configuration ============
-const char* ws_host = "10.252.163.187";  // CHANGE THIS TO YOUR COMPUTER'S IP
+const char* ws_host = "10.121.155.187";  // CHANGE THIS TO YOUR COMPUTER'S IP
 const uint16_t ws_port = 3000;
 const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz";
 
@@ -23,7 +23,7 @@ const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz
 #define ENA  25
 #define IN1  26
 #define IN2  27
-ine ENB  33
+#define ENB  33
 #define IN3  32
 #define IN4  35
 
@@ -200,7 +200,7 @@ void setup() {
 
   // Connect to WiFi
   Serial.print("Connecting to WiFi");
-  WiFi.begin(ssid, pass);
+  WiFi.begin(ssid, password);
   int wifiAttempts = 0;
   while (WiFi.status() != WL_CONNECTED && wifiAttempts < 20) {
     Serial.print(".");
@@ -294,6 +294,23 @@ void handleCommand(char* payload) {
       int pwmSpeed = map(value, 0, 100, 0, 255);
       setMotorSpeed(motor, pwmSpeed);
       sendAck("Motor " + motorStr + " speed set to " + String(value) + "%");
+    }
+    else if (command == "SET_DIRECTION") {
+      String direction = doc["direction"].as<String>();
+      bool forward = (direction == "forward" || direction == "FORWARD");
+      setMotorDirection(motor, forward);
+      sendAck("Motor " + motorStr + " direction set to " + direction);
+      Serial.printf("Motor %c direction: %s\n", motor, direction.c_str());
+    }
+    else if (command == "FORWARD") {
+      setMotorDirection(motor, true);
+      sendAck("Motor " + motorStr + " set to FORWARD");
+      Serial.printf("Motor %c set to FORWARD\n", motor);
+    }
+    else if (command == "REVERSE") {
+      setMotorDirection(motor, false);
+      sendAck("Motor " + motorStr + " set to REVERSE");
+      Serial.printf("Motor %c set to REVERSE\n", motor);
     }
     else if (command == "RESET") {
       stopMotor('A');

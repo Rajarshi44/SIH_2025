@@ -12,7 +12,7 @@ export function handleDashboardConnection(ws: ExtendedWebSocket, req: any) {
   const payload = verifyToken(token);
   if (!payload) {
     console.log("[Dashboard] Invalid token");
-    ws.close(4001, "Invalid token");
+    ws.close(1008, "Invalid token");
     return;
   }
 

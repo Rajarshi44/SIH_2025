@@ -70,6 +70,42 @@ export const motorService = {
     return response.json();
   },
 
+  async setDirection(motor: string, direction: "forward" | "reverse") {
+    const response = await fetch(`${API_BASE}/command/set-direction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ motor, direction }),
+    });
+    if (!response.ok) throw new Error("Failed to set direction");
+    return response.json();
+  },
+
+  async setForward(motor: string) {
+    const response = await fetch(`${API_BASE}/command/forward`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ motor }),
+    });
+    if (!response.ok) throw new Error("Failed to set forward");
+    return response.json();
+  },
+
+  async setReverse(motor: string) {
+    const response = await fetch(`${API_BASE}/command/reverse`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ motor }),
+    });
+    if (!response.ok) throw new Error("Failed to set reverse");
+    return response.json();
+  },
+
   async sendCommand(command: string, motor: string) {
     const response = await fetch(`${API_BASE}/command/start`, {
       method: "POST",
@@ -158,22 +194,50 @@ export class WebSocketService {
       store.setTelemetry(data);
 
       if (data.motorA) {
-        store.updateMotorA(data.motorA);
-        store.addHistoryPoint("motorA", data.motorA);
+        // Calculate load (Power = Voltage × Current in watts)
+        const load =
+          data.motorA.current !== null
+            ? Math.abs(data.motorA.voltage * data.motorA.current)
+            : 0;
+
+        store.updateMotorA({
+          ...data.motorA,
+          load,
+          current: data.motorA.current || 0,
+        });
+        store.addHistoryPoint("motorA", {
+          voltage: data.motorA.voltage,
+          current: data.motorA.current || 0,
+          rpm: data.motorA.rpm,
+        });
       }
 
       if (data.motorB) {
-        store.updateMotorB(data.motorB);
-        store.addHistoryPoint("motorB", data.motorB);
+        // Calculate load (Power = Voltage × Current in watts)
+        const load =
+          data.motorB.current !== null
+            ? Math.abs(data.motorB.voltage * data.motorB.current)
+            : 0;
+
+        store.updateMotorB({
+          ...data.motorB,
+          load,
+          current: data.motorB.current || 0,
+        });
+        store.addHistoryPoint("motorB", {
+          voltage: data.motorB.voltage,
+          current: data.motorB.current || 0,
+          rpm: data.motorB.rpm,
+        });
       }
 
       // Check for jam detection
       if (data.isJammed) {
-        const motor = data.motorA.current > 2 ? "Motor A" : "Motor B";
+        const motor = (data.motorA.current || 0) > 2 ? "Motor A" : "Motor B";
         store.addJamAlert({
           motor,
           severity:
-            data.motorA.current > 3 || data.motorB.current > 3
+            (data.motorA.current || 0) > 3 || (data.motorB.current || 0) > 3
               ? "severe"
               : "warning",
           reason: "High current detected",

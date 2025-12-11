@@ -23,11 +23,11 @@
 #include <Adafruit_INA219.h>
 
 // ============ WiFi Configuration ============
-const char* ssid = "YOUR_WIFI_SSID";          // Change this
-const char* password = "YOUR_WIFI_PASSWORD";   // Change this
+const char* ssid = "Galaxy A14 5G";          // Change this
+const char* password = "potatochips";   // Change this
 
 // ============ WebSocket Configuration ============
-const char* ws_host = "192.168.1.100";  // Your server IP address
+const char* ws_host = "10.121.155.187";  // Your server IP address
 const uint16_t ws_port = 3000;
 const char* ws_path = "/ws/device?device_id=esp32_1&token=esp32-device-token-xyz";
 

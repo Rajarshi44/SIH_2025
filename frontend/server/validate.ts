@@ -23,16 +23,16 @@ export function validateTelemetry(data: any): data is TelemetryMessage {
   if (
     !data.motorA ||
     typeof data.motorA.voltage !== "number" ||
-    typeof data.motorA.current !== "number" ||
+    (data.motorA.current !== null && typeof data.motorA.current !== "number") ||
     typeof data.motorA.rpm !== "number"
   )
     return false;
 
-  // Validate motorB
+  // Validate motorB (allow null for current if sensor not found)
   if (
     !data.motorB ||
     typeof data.motorB.voltage !== "number" ||
-    typeof data.motorB.current !== "number" ||
+    (data.motorB.current !== null && typeof data.motorB.current !== "number") ||
     typeof data.motorB.rpm !== "number"
   )
     return false;

@@ -4,9 +4,10 @@ interface MotorState {
   speed: number;
   rpm: number;
   voltage: number;
-  current: number;
+  current: number | null;
   status: "stopped" | "running" | "jammed";
   isOn: boolean;
+  load?: number; // Power in watts (V × A)
 }
 
 interface TelemetryData {

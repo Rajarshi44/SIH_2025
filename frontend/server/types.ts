@@ -33,19 +33,22 @@ export interface TelemetryMessage {
   type: "telemetry";
   motorA: {
     voltage: number;
-    current: number;
+    current: number | null;
     rpm: number;
     status: "idle" | "running" | "error";
+    speed?: number;
   };
   motorB: {
     voltage: number;
-    current: number;
+    current: number | null;
     rpm: number;
     status: "idle" | "running" | "error";
+    speed?: number;
   };
   temperature?: number;
   vibration?: number;
   isJammed?: boolean;
+  ledState?: boolean;
   timestamp: string;
 }
 

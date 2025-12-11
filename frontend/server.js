@@ -15,6 +15,17 @@ const port = parseInt(process.env.PORT || "3000", 10);
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
+// Add global error handlers to prevent crashes from WebSocket errors
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error.message);
+  console.error("Stack:", error.stack);
+  // Don't exit the process, just log the error
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
     try {

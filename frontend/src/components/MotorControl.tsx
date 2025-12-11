@@ -85,15 +85,7 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
 
     // Send direction command to ESP32
     try {
-      await fetch("/api/command/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          command: "SET_DIRECTION",
-          motor: motorName,
-          direction: newDirection,
-        }),
-      });
+      await motorService.setDirection(motorLetter, newDirection);
     } catch (error) {
       console.error("Failed to set direction:", error);
     }
@@ -110,8 +102,13 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
     }
   };
 
-  const loadPercentage = ((motor.current / 2000) * 100).toFixed(1);
+  // Calculate load percentage based on max current threshold (2A = 2000mA)
+  const currentValue = motor.current || 0;
+  const loadPercentage = ((Math.abs(currentValue) / 2000) * 100).toFixed(1);
   const pwmPercentage = ((motor.speed / 255) * 100).toFixed(0);
+
+  // Calculate power in watts (V × A)
+  const powerWatts = motor.load ? motor.load.toFixed(3) : "0.000";
 
   return (
     <Card
@@ -206,15 +203,15 @@ export const MotorControl = ({ motorId }: MotorControlProps) => {
         <div className="bg-dark-700 p-4 rounded-lg">
           <span className="text-xs text-gray-400">Current</span>
           <p className="text-2xl font-bold text-white">
-            {motor.current.toFixed(0)}{" "}
+            {currentValue.toFixed(1)}{" "}
             <span className="text-sm text-gray-400">mA</span>
           </p>
         </div>
 
         <div className="bg-dark-700 p-4 rounded-lg">
-          <span className="text-xs text-gray-400">Load</span>
+          <span className="text-xs text-gray-400">Power</span>
           <p className="text-2xl font-bold text-white">
-            {loadPercentage} <span className="text-sm text-gray-400">%</span>
+            {powerWatts} <span className="text-sm text-gray-400">W</span>
           </p>
         </div>
       </div>

@@ -12,13 +12,13 @@ export function handleDeviceConnection(ws: ExtendedWebSocket, req: any) {
   // Validate device token
   if (!verifyDeviceToken(token)) {
     console.log("[Device] Invalid token");
-    ws.close(4001, "Invalid token");
+    ws.close(1008, "Invalid token");
     return;
   }
 
   if (!deviceId) {
     console.log("[Device] Missing device_id");
-    ws.close(4002, "Missing device_id");
+    ws.close(1008, "Missing device_id");
     return;
   }
 
@@ -86,8 +86,10 @@ export function handleDeviceConnection(ws: ExtendedWebSocket, req: any) {
   });
 
   // Handle close
-  ws.on("close", () => {
-    console.log(`[Device] Disconnected: ${deviceId}`);
+  ws.on("close", (code, reason) => {
+    console.log(
+      `[Device] Disconnected: ${deviceId} (code: ${code}, reason: ${reason.toString()})`
+    );
     connectionManager.removeDevice(deviceId);
     connectionManager.broadcastStatus({
       type: "status",
@@ -98,7 +100,15 @@ export function handleDeviceConnection(ws: ExtendedWebSocket, req: any) {
 
   // Handle error
   ws.on("error", (error) => {
-    console.error(`[Device] Error on ${deviceId}:`, error);
+    console.error(`[Device] Error on ${deviceId}:`, error.message);
+    // Safely close the connection on error
+    try {
+      if (ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+        ws.terminate();
+      }
+    } catch (e) {
+      console.error(`[Device] Failed to terminate connection:`, e);
+    }
   });
 
   console.log(`[Device] Connected: ${deviceId} from ${ip}`);
